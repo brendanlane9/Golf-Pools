@@ -1,431 +1,415 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2685.6">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>British Open Pool 2026</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
-<body>
-<p class="p1">&lt;!DOCTYPE html&gt;</p>
-<p class="p1">&lt;html lang="en"&gt;</p>
-<p class="p1">&lt;head&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta charset="UTF-8"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;title&gt;British Open Pool 2026&lt;/title&gt;</p>
-<p class="p2"><span class="Apple-converted-space">  </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;script src="https://cdn.tailwindcss.com"&gt;&lt;/script&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin&gt;&lt;/script&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin&gt;&lt;/script&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;script src="https://unpkg.com/@babel/standalone/babel.min.js"&gt;&lt;/script&gt;</p>
-<p class="p1">&lt;/head&gt;</p>
-<p class="p1">&lt;body class="bg-slate-900 text-slate-100 font-sans"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div id="root"&gt;&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;script type="text/babel"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const { useState, useEffect, useMemo } = React;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>// --- ICONS ---</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const TrophyIcon = () =&gt; (</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"&gt;&lt;path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/&gt;&lt;path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/&gt;&lt;path d="M4 22h16"/&gt;&lt;path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/&gt;&lt;path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/&gt;&lt;path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/&gt;&lt;/svg&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const RefreshIcon = ({ className }) =&gt; (</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;svg className={className} xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"&gt;&lt;path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/&gt;&lt;path d="M3 3v5h5"/&gt;&lt;/svg&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const AlertIcon = () =&gt; (</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"&gt;&lt;circle cx="12" cy="12" r="10"/&gt;&lt;line x1="12" y1="8" x2="12" y2="12"/&gt;&lt;line x1="12" y1="16" x2="12.01" y2="16"/&gt;&lt;/svg&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const SettingsIcon = () =&gt; (</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"&gt;&lt;circle cx="12" cy="12" r="3"/&gt;&lt;path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/&gt;&lt;/svg&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const UsersIcon = () =&gt; (</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"&gt;&lt;path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/&gt;&lt;circle cx="9" cy="7" r="4"/&gt;&lt;path d="M22 21v-2a4 4 0 0 0-3-3.87"/&gt;&lt;path d="M16 3.13a4 4 0 0 1 0 7.75"/&gt;&lt;/svg&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>const POOL_ENTRIES = [</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Tito", picks: ["Matt Fitzpatrick", "Alex Fitzpatrick", "Tommy Fleetwood", "Justin Rose", "Brian Harman"] },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Daddy", picks: ["Matt Fitzpatrick", "Rory McIlroy", "Xander Schauffele", "Scottie Scheffler", "Chris Gotterup"] },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Fiffy", picks: ["Robert MacIntyre", "Chris Gotterup", "Tommy Fleetwood", "Viktor Hovland", "Tyrrell Hatton"] },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Austina", picks: ["Russell Henley", "Min Woo Lee", "Keita Nakajima", "Matthew Jordan", "Tom Kim"] },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Aunties", picks: ["Matt Fitzpatrick", "Tommy Fleetwood", "Justin Rose", "Chris Gotterup", "Russell Henley"] },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Auntie Dave", picks: ["Rory McIlroy", "Tommy Fleetwood", "Matt Fitzpatrick", "Xander Schauffele", "Chris Gotterup"] },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Jeans", picks: ["Brian Harman", "Tommy Fleetwood", "Matt Fitzpatrick", "Justin Rose", "Rory McIlroy"] },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Libenold", picks: ["Viktor Hovland", "Min Woo Lee", "Ludvig Aberg", "Justin Rose", "Matt Fitzpatrick"] }</p>
-<p class="p1"><span class="Apple-converted-space">    </span>];</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>const calculatePickFrequencies = () =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const counts = {};</p>
-<p class="p1"><span class="Apple-converted-space">      </span>POOL_ENTRIES.forEach(entry =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>entry.picks.forEach(pick =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>counts[pick] = (counts[pick] || 0) + 1;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>});</p>
-<p class="p1"><span class="Apple-converted-space">      </span>});</p>
-<p class="p1"><span class="Apple-converted-space">      </span>return counts;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>};</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const PICK_COUNTS = calculatePickFrequencies();</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>const DEMO_LEADERBOARD = [</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Scottie Scheffler", posStr: "1", posInt: 1, score: "-12", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Xander Schauffele", posStr: "T2", posInt: 2, score: "-10", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Rory McIlroy", posStr: "T2", posInt: 2, score: "-10", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Tommy Fleetwood", posStr: "T4", posInt: 4, score: "-8", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Ludvig Aberg", posStr: "T8", posInt: 8, score: "-6", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Tom Kim", posStr: "T10", posInt: 10, score: "-5", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Tyrrell Hatton", posStr: "T15", posInt: 15, score: "-3", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Min Woo Lee", posStr: "T15", posInt: 15, score: "-3", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Brian Harman", posStr: "T22", posInt: 22, score: "-1", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Matt Fitzpatrick", posStr: "T22", posInt: 22, score: "-1", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Russell Henley", posStr: "T30", posInt: 30, score: "E", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Justin Rose", posStr: "T45", posInt: 45, score: "+2", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Robert MacIntyre", posStr: "T50", posInt: 50, score: "+3", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Keita Nakajima", posStr: "T60", posInt: 60, score: "+4", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Viktor Hovland", posStr: "MC", posInt: 85, score: "+8", isMC: true, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Chris Gotterup", posStr: "MC", posInt: 90, score: "+9", isMC: true, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Alex Fitzpatrick", posStr: "MC", posInt: 100, score: "+10", isMC: true, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Matthew Jordan", posStr: "WD", posInt: 150, score: "-", isMC: false, isWD: true },</p>
-<p class="p1"><span class="Apple-converted-space">    </span>];</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>const PROJECTIONS_LEADERBOARD = [</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Scottie Scheffler", posStr: "Proj 1", posInt: 1, score: "+550", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Rory McIlroy", posStr: "Proj 2", posInt: 2, score: "+750", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Xander Schauffele", posStr: "Proj 3", posInt: 3, score: "+1100", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Ludvig Aberg", posStr: "Proj 5", posInt: 5, score: "+1200", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Tommy Fleetwood", posStr: "Proj 6", posInt: 6, score: "+1400", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Matt Fitzpatrick", posStr: "Proj 8", posInt: 8, score: "+1600", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Chris Gotterup", posStr: "Proj 15", posInt: 15, score: "+2800", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Tyrrell Hatton", posStr: "Proj 18", posInt: 18, score: "+3000", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Viktor Hovland", posStr: "Proj 22", posInt: 22, score: "+3500", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Robert MacIntyre", posStr: "Proj 22", posInt: 22, score: "+3500", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Justin Rose", posStr: "Proj 35", posInt: 35, score: "+4700", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Min Woo Lee", posStr: "Proj 40", posInt: 40, score: "+5000", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Tom Kim", posStr: "Proj 40", posInt: 40, score: "+5000", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Brian Harman", posStr: "Proj 45", posInt: 45, score: "+6000", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Russell Henley", posStr: "Proj 45", posInt: 45, score: "+6000", isMC: false, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Alex Fitzpatrick", posStr: "Proj MC", posInt: 80, score: "+20000", isMC: true, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Keita Nakajima", posStr: "Proj MC", posInt: 90, score: "+25000", isMC: true, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Matthew Jordan", posStr: "Proj MC", posInt: 100, score: "+30000", isMC: true, isWD: false },</p>
-<p class="p1"><span class="Apple-converted-space">    </span>];</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>function App() {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const [leaderboard, setLeaderboard] = useState([]);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const [mode, setMode] = useState('demo');</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const [loading, setLoading] = useState(true);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const [lastUpdate, setLastUpdate] = useState(null);</p>
-<p class="p2"><span class="Apple-converted-space">      </span></p>
-<p class="p1"><span class="Apple-converted-space">      </span>const [cutBase, setCutBase] = useState(70);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const [cutPenalty, setCutPenalty] = useState(50);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const [showSettings, setShowSettings] = useState(false);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>const fetchLeaderboard = async () =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>setLoading(true);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (mode === 'demo') {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>setTimeout(() =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>setLeaderboard(DEMO_LEADERBOARD);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>setLastUpdate(new Date());</p>
-<p class="p1"><span class="Apple-converted-space">            </span>setLoading(false);</p>
-<p class="p1"><span class="Apple-converted-space">          </span>}, 600);</p>
-<p class="p1"><span class="Apple-converted-space">          </span>return;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>} else if (mode === 'projections') {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>setTimeout(() =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>setLeaderboard(PROJECTIONS_LEADERBOARD);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>setLastUpdate(new Date());</p>
-<p class="p1"><span class="Apple-converted-space">            </span>setLoading(false);</p>
-<p class="p1"><span class="Apple-converted-space">          </span>}, 300);</p>
-<p class="p1"><span class="Apple-converted-space">          </span>return;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>try {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>const res = await fetch('https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard');</p>
-<p class="p1"><span class="Apple-converted-space">          </span>const data = await res.json();</p>
-<p class="p2"><span class="Apple-converted-space">          </span></p>
-<p class="p1"><span class="Apple-converted-space">          </span>const events = data.events || [];</p>
-<p class="p1"><span class="Apple-converted-space">          </span>if (events.length === 0) throw new Error("No event data");</p>
-<p class="p2"><span class="Apple-converted-space">          </span></p>
-<p class="p1"><span class="Apple-converted-space">          </span>const competitors = events[0].competitions[0].competitors;</p>
-<p class="p2"><span class="Apple-converted-space">          </span></p>
-<p class="p1"><span class="Apple-converted-space">          </span>const parsedData = competitors.map(c =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const posStr = c.status.position.displayName || "-";</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let posInt = parseInt(posStr.replace(/\D/g, ''));</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (isNaN(posInt)) posInt = 0;</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>const typeId = c.status.type.id;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const typeDesc = (c.status.type.description || "").toUpperCase();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const isMC = typeId === "3" || posStr.toUpperCase() === "MC" || typeDesc.includes("CUT");</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const isWD = typeId === "4" || posStr.toUpperCase() === "WD" || typeDesc.includes("WITHDRAWN");</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>return {</p>
-<p class="p1"><span class="Apple-converted-space">              </span>name: c.athlete.displayName,</p>
-<p class="p1"><span class="Apple-converted-space">              </span>posStr,</p>
-<p class="p1"><span class="Apple-converted-space">              </span>posInt,</p>
-<p class="p1"><span class="Apple-converted-space">              </span>score: c.score || "E",</p>
-<p class="p1"><span class="Apple-converted-space">              </span>isMC,</p>
-<p class="p1"><span class="Apple-converted-space">              </span>isWD</p>
-<p class="p1"><span class="Apple-converted-space">            </span>};</p>
-<p class="p1"><span class="Apple-converted-space">          </span>});</p>
-<p class="p2"><span class="Apple-converted-space">          </span></p>
-<p class="p1"><span class="Apple-converted-space">          </span>setLeaderboard(parsedData);</p>
-<p class="p1"><span class="Apple-converted-space">          </span>setLastUpdate(new Date());</p>
-<p class="p1"><span class="Apple-converted-space">        </span>} catch (err) {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>console.error("Error fetching live standings:", err);</p>
-<p class="p1"><span class="Apple-converted-space">          </span>setLeaderboard(DEMO_LEADERBOARD);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>} finally {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>setLoading(false);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">      </span>};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>useEffect(() =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>fetchLeaderboard();</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}, [mode]);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>const getPlayerScore = (playerName) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let player = leaderboard.find(p =&gt; p.name.toLowerCase() === playerName.toLowerCase());</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (!player) {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>const nameParts = playerName.toLowerCase().trim().split(' ');</p>
-<p class="p1"><span class="Apple-converted-space">          </span>const lastName = nameParts[nameParts.length - 1];</p>
-<p class="p1"><span class="Apple-converted-space">          </span>const firstInitial = nameParts[0].charAt(0);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">          </span>player = leaderboard.find(p =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const pParts = p.name.toLowerCase().trim().split(' ');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const pLastName = pParts[pParts.length - 1];</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const pFirstInitial = pParts[0].charAt(0);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return pLastName === lastName &amp;&amp; pFirstInitial === firstInitial;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>});</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (!player) {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>player = leaderboard.find(p =&gt; p.name.toLowerCase().includes(playerName.toLowerCase()));</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>let pos = 1;<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>let isCutOrWD = false;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let posStr = "-";</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let realScore = "-";</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (player) {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>posStr = player.posStr;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>realScore = player.score;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>if (player.isMC || player.isWD) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>pos = cutBase + cutPenalty;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>isCutOrWD = true;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>} else if (player.posInt &gt; 0) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>pos = player.posInt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>const multiplier = PICK_COUNTS[playerName] || 1;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const totalPoints = pos * multiplier;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>return {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>name: player ? player.name : playerName,</p>
-<p class="p1"><span class="Apple-converted-space">          </span>posStr,</p>
-<p class="p1"><span class="Apple-converted-space">          </span>rawPos: pos,</p>
-<p class="p1"><span class="Apple-converted-space">          </span>realScore,</p>
-<p class="p1"><span class="Apple-converted-space">          </span>multiplier,</p>
-<p class="p1"><span class="Apple-converted-space">          </span>totalPoints,</p>
-<p class="p1"><span class="Apple-converted-space">          </span>isCutOrWD,</p>
-<p class="p1"><span class="Apple-converted-space">          </span>found: !!player</p>
-<p class="p1"><span class="Apple-converted-space">        </span>};</p>
-<p class="p1"><span class="Apple-converted-space">      </span>};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>const poolResults = useMemo(() =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>return POOL_ENTRIES.map(entry =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>const picksScored = entry.picks.map(getPlayerScore);</p>
-<p class="p1"><span class="Apple-converted-space">          </span>const totalScore = picksScored.reduce((sum, p) =&gt; sum + p.totalPoints, 0);</p>
-<p class="p1"><span class="Apple-converted-space">          </span>return { ...entry, picksScored, totalScore };</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}).sort((a, b) =&gt; a.totalScore - b.totalScore);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}, [leaderboard, cutBase, cutPenalty]);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>return (</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div className="min-h-screen p-4 md:p-8"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="max-w-7xl mx-auto space-y-8"&gt;</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;header className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-700"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;h1 className="text-3xl font-extrabold text-white flex items-center gap-3"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;span className="text-emerald-500"&gt;&lt;TrophyIcon /&gt;&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>British Open Pool 2026</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/h1&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;p className="text-slate-400 mt-1 text-sm"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>Lowest combined finish wins. Duplicates = multiplier penalty. Missed cut = T{cutBase} + {cutPenalty}.</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
-<p class="p2"><span class="Apple-converted-space">              </span></p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className="flex flex-wrap items-center gap-4"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div className="flex items-center bg-slate-900 rounded-lg p-1 border border-slate-700"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;button<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>onClick={() =&gt; setMode('demo')}</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${mode === 'demo' ? 'bg-indigo-500 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>Demo</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;button<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>onClick={() =&gt; setMode('projections')}</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${mode === 'projections' ? 'bg-amber-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>Projections</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;button<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>onClick={() =&gt; setMode('live')}</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${mode === 'live' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>Live API</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;button<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                  </span>onClick={fetchLeaderboard}<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                  </span>disabled={loading}</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;RefreshIcon className={loading ? 'animate-spin' : ''} /&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>Refresh</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/button&gt;</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;button<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                  </span>onClick={() =&gt; setShowSettings(!showSettings)}</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>className="p-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors text-slate-300"</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>title="Settings"</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;SettingsIcon /&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/header&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>{/* Settings Panel */}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>{showSettings &amp;&amp; (</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700 transition-all"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;h3 className="text-lg font-bold mb-4 flex items-center gap-2"&gt;&lt;SettingsIcon /&gt; Pool Settings&lt;/h3&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div className="grid grid-cols-1 md:grid-cols-2 gap-6"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;label className="block text-sm font-medium text-slate-400 mb-2"&gt;Base Cut Line Position&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;input<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                      </span>type="number"<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                      </span>value={cutBase}<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                      </span>onChange={(e) =&gt; setCutBase(parseInt(e.target.value) || 0)}</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>/&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;label className="block text-sm font-medium text-slate-400 mb-2"&gt;Missed Cut Penalty&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;input<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                      </span>type="number"<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                      </span>value={cutPenalty}<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                      </span>onChange={(e) =&gt; setCutPenalty(parseInt(e.target.value) || 0)}</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>/&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>)}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="flex items-center justify-between px-2 text-sm text-slate-400"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className="flex items-center gap-2"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>{mode === 'live' &amp;&amp; (</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;&gt;&lt;span className="relative flex h-3 w-3"&gt;&lt;span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"&gt;&lt;/span&gt;&lt;span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"&gt;&lt;/span&gt;&lt;/span&gt; Pulling real-time PGA data&lt;/&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>)}</p>
-<p class="p1"><span class="Apple-converted-space">                </span>{mode === 'demo' &amp;&amp; (</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;&gt;&lt;span className="h-3 w-3 rounded-full bg-indigo-500"&gt;&lt;/span&gt; Using simulated demo scores&lt;/&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>)}</p>
-<p class="p1"><span class="Apple-converted-space">                </span>{mode === 'projections' &amp;&amp; (</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;&gt;&lt;span className="h-3 w-3 rounded-full bg-amber-500"&gt;&lt;/span&gt; Using pre-tournament betting odds projections&lt;/&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>)}</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>{lastUpdate &amp;&amp; &lt;span&gt;Last updated: {lastUpdate.toLocaleTimeString()}&lt;/span&gt;}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>{}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="grid grid-cols-1 xl:grid-cols-2 gap-6"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>{poolResults.map((participant, index) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const isLeader = index === 0;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>return (</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;div<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>key={participant.name}<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>className={`relative rounded-2xl overflow-hidden shadow-xl border ${isLeader ? 'border-amber-400/50 bg-slate-800' : 'border-slate-700 bg-slate-800/80'} transition-transform hover:-translate-y-1`}</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div className={`p-5 flex justify-between items-center border-b ${isLeader ? 'border-amber-400/20 bg-amber-400/5' : 'border-slate-700 bg-slate-900/50'}`}&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>&lt;div className="flex items-center gap-3"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${isLeader ? 'bg-amber-400 text-slate-900' : 'bg-slate-700 text-slate-300'}`}&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                          </span>{index + 1}</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;h2 className="text-2xl font-bold tracking-tight"&gt;{participant.name}&lt;/h2&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>&lt;div className="text-right"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div className="text-sm text-slate-400 font-medium uppercase tracking-wider mb-1"&gt;Total Points&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div className={`text-4xl font-black ${isLeader ? 'text-amber-400' : 'text-white'}`}&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                          </span>{participant.totalScore}</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div className="p-0 overflow-x-auto"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>&lt;table className="w-full text-left border-collapse min-w-[500px]"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;thead&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                          </span>&lt;tr className="bg-slate-900/80 text-slate-400 text-xs uppercase tracking-wider"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;th className="px-5 py-3 font-medium"&gt;Golfer&lt;/th&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;th className="px-5 py-3 font-medium text-center"&gt;{mode === 'projections' ? 'Odds' : 'Score'}&lt;/th&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;th className="px-5 py-3 font-medium text-center"&gt;{mode === 'projections' ? 'Proj Pos' : 'Pos'}&lt;/th&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;th className="px-5 py-3 font-medium text-center"&gt;Mult&lt;/th&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;th className="px-5 py-3 font-medium text-right text-emerald-400"&gt;{mode === 'projections' ? 'Proj Pts' : 'Pts'}&lt;/th&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                          </span>&lt;/tr&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/thead&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;tbody className="divide-y divide-slate-700/50"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                          </span>{participant.picksScored.map((pick, i) =&gt; (</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;tr key={i} className="hover:bg-slate-700/20 transition-colors"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                              </span>&lt;td className="px-5 py-3 flex items-center gap-2"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                </span>&lt;span className="font-semibold text-slate-200"&gt;{pick.name}&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                </span>{!pick.found &amp;&amp; &lt;span title="Player not started or not found in data" className="text-amber-500"&gt;&lt;AlertIcon /&gt;&lt;/span&gt;}</p>
-<p class="p1"><span class="Apple-converted-space">                              </span>&lt;/td&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                              </span>&lt;td className="px-5 py-3 text-center"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                </span>&lt;span className={`font-mono font-medium ${(mode !== 'projections' &amp;&amp; pick.realScore.startsWith('-')) ? 'text-rose-400' : 'text-slate-300'}`}&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                  </span>{pick.realScore}</p>
-<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                              </span>&lt;/td&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                              </span>&lt;td className="px-5 py-3 text-center"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                </span>{pick.isCutOrWD ? (</p>
-<p class="p1"><span class="Apple-converted-space">                                  </span>&lt;span className="inline-block px-2 py-1 bg-red-900/50 text-red-300 text-xs font-bold rounded whitespace-nowrap"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                    </span>{mode === 'projections' ? 'Proj MC' : `MC (T${pick.rawPos})`}</p>
-<p class="p1"><span class="Apple-converted-space">                                  </span>&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                </span>) : (</p>
-<p class="p1"><span class="Apple-converted-space">                                  </span>&lt;span className="font-medium text-slate-300"&gt;{pick.posStr}&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                </span>)}</p>
-<p class="p1"><span class="Apple-converted-space">                              </span>&lt;/td&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                              </span>&lt;td className="px-5 py-3 text-center"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                </span>{pick.multiplier &gt; 1 ? (</p>
-<p class="p1"><span class="Apple-converted-space">                                  </span>&lt;span className="inline-flex items-center justify-center gap-1 px-2 py-1 bg-indigo-900/50 text-indigo-300 text-xs font-bold rounded-full border border-indigo-700/50 min-w-[40px]"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;UsersIcon /&gt; {pick.multiplier}x</p>
-<p class="p1"><span class="Apple-converted-space">                                  </span>&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                </span>) : (</p>
-<p class="p1"><span class="Apple-converted-space">                                  </span>&lt;span className="text-slate-600 text-sm"&gt;—&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                </span>)}</p>
-<p class="p1"><span class="Apple-converted-space">                              </span>&lt;/td&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                              </span>&lt;td className="px-5 py-3 text-right"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                </span>&lt;span className="font-bold text-lg text-white"&gt;{pick.totalPoints}&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                              </span>&lt;/td&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/tr&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                          </span>))}</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/tbody&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>&lt;/table&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>);</p>
-<p class="p1"><span class="Apple-converted-space">              </span>})}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>const root = ReactDOM.createRoot(document.getElementById('root'));</p>
-<p class="p1"><span class="Apple-converted-space">    </span>root.render(&lt;App /&gt;);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/script&gt;</p>
-<p class="p1">&lt;/body&gt;</p>
-<p class="p1">&lt;/html&gt;</p>
+<body class="bg-slate-900 text-slate-100 font-sans">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+
+    // --- ICONS ---
+    const TrophyIcon = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+    );
+    const RefreshIcon = ({ className }) => (
+      <svg className={className} xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+    );
+    const AlertIcon = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    );
+    const SettingsIcon = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    );
+    const UsersIcon = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    );
+
+    const POOL_ENTRIES = [
+      { name: "Tito", picks: ["Matt Fitzpatrick", "Alex Fitzpatrick", "Tommy Fleetwood", "Justin Rose", "Brian Harman"] },
+      { name: "Daddy", picks: ["Matt Fitzpatrick", "Rory McIlroy", "Xander Schauffele", "Scottie Scheffler", "Chris Gotterup"] },
+      { name: "Fiffy", picks: ["Robert MacIntyre", "Chris Gotterup", "Tommy Fleetwood", "Viktor Hovland", "Tyrrell Hatton"] },
+      { name: "Austina", picks: ["Russell Henley", "Min Woo Lee", "Keita Nakajima", "Matthew Jordan", "Tom Kim"] },
+      { name: "Aunties", picks: ["Matt Fitzpatrick", "Tommy Fleetwood", "Justin Rose", "Chris Gotterup", "Russell Henley"] },
+      { name: "Auntie Dave", picks: ["Rory McIlroy", "Tommy Fleetwood", "Matt Fitzpatrick", "Xander Schauffele", "Chris Gotterup"] },
+      { name: "Jeans", picks: ["Brian Harman", "Tommy Fleetwood", "Matt Fitzpatrick", "Justin Rose", "Rory McIlroy"] },
+      { name: "Libenold", picks: ["Viktor Hovland", "Min Woo Lee", "Ludvig Aberg", "Justin Rose", "Matt Fitzpatrick"] }
+    ];
+
+    const calculatePickFrequencies = () => {
+      const counts = {};
+      POOL_ENTRIES.forEach(entry => {
+        entry.picks.forEach(pick => {
+          counts[pick] = (counts[pick] || 0) + 1;
+        });
+      });
+      return counts;
+    };
+    const PICK_COUNTS = calculatePickFrequencies();
+
+    const DEMO_LEADERBOARD = [
+      { name: "Scottie Scheffler", posStr: "1", posInt: 1, score: "-12", isMC: false, isWD: false },
+      { name: "Xander Schauffele", posStr: "T2", posInt: 2, score: "-10", isMC: false, isWD: false },
+      { name: "Rory McIlroy", posStr: "T2", posInt: 2, score: "-10", isMC: false, isWD: false },
+      { name: "Tommy Fleetwood", posStr: "T4", posInt: 4, score: "-8", isMC: false, isWD: false },
+      { name: "Ludvig Aberg", posStr: "T8", posInt: 8, score: "-6", isMC: false, isWD: false },
+      { name: "Tom Kim", posStr: "T10", posInt: 10, score: "-5", isMC: false, isWD: false },
+      { name: "Tyrrell Hatton", posStr: "T15", posInt: 15, score: "-3", isMC: false, isWD: false },
+      { name: "Min Woo Lee", posStr: "T15", posInt: 15, score: "-3", isMC: false, isWD: false },
+      { name: "Brian Harman", posStr: "T22", posInt: 22, score: "-1", isMC: false, isWD: false },
+      { name: "Matt Fitzpatrick", posStr: "T22", posInt: 22, score: "-1", isMC: false, isWD: false },
+      { name: "Russell Henley", posStr: "T30", posInt: 30, score: "E", isMC: false, isWD: false },
+      { name: "Justin Rose", posStr: "T45", posInt: 45, score: "+2", isMC: false, isWD: false },
+      { name: "Robert MacIntyre", posStr: "T50", posInt: 50, score: "+3", isMC: false, isWD: false },
+      { name: "Keita Nakajima", posStr: "T60", posInt: 60, score: "+4", isMC: false, isWD: false },
+      { name: "Viktor Hovland", posStr: "MC", posInt: 85, score: "+8", isMC: true, isWD: false },
+      { name: "Chris Gotterup", posStr: "MC", posInt: 90, score: "+9", isMC: true, isWD: false },
+      { name: "Alex Fitzpatrick", posStr: "MC", posInt: 100, score: "+10", isMC: true, isWD: false },
+      { name: "Matthew Jordan", posStr: "WD", posInt: 150, score: "-", isMC: false, isWD: true },
+    ];
+
+    const PROJECTIONS_LEADERBOARD = [
+      { name: "Scottie Scheffler", posStr: "Proj 1", posInt: 1, score: "+550", isMC: false, isWD: false },
+      { name: "Rory McIlroy", posStr: "Proj 2", posInt: 2, score: "+750", isMC: false, isWD: false },
+      { name: "Xander Schauffele", posStr: "Proj 3", posInt: 3, score: "+1100", isMC: false, isWD: false },
+      { name: "Ludvig Aberg", posStr: "Proj 5", posInt: 5, score: "+1200", isMC: false, isWD: false },
+      { name: "Tommy Fleetwood", posStr: "Proj 6", posInt: 6, score: "+1400", isMC: false, isWD: false },
+      { name: "Matt Fitzpatrick", posStr: "Proj 8", posInt: 8, score: "+1600", isMC: false, isWD: false },
+      { name: "Chris Gotterup", posStr: "Proj 15", posInt: 15, score: "+2800", isMC: false, isWD: false },
+      { name: "Tyrrell Hatton", posStr: "Proj 18", posInt: 18, score: "+3000", isMC: false, isWD: false },
+      { name: "Viktor Hovland", posStr: "Proj 22", posInt: 22, score: "+3500", isMC: false, isWD: false },
+      { name: "Robert MacIntyre", posStr: "Proj 22", posInt: 22, score: "+3500", isMC: false, isWD: false },
+      { name: "Justin Rose", posStr: "Proj 35", posInt: 35, score: "+4700", isMC: false, isWD: false },
+      { name: "Min Woo Lee", posStr: "Proj 40", posInt: 40, score: "+5000", isMC: false, isWD: false },
+      { name: "Tom Kim", posStr: "Proj 40", posInt: 40, score: "+5000", isMC: false, isWD: false },
+      { name: "Brian Harman", posStr: "Proj 45", posInt: 45, score: "+6000", isMC: false, isWD: false },
+      { name: "Russell Henley", posStr: "Proj 45", posInt: 45, score: "+6000", isMC: false, isWD: false },
+      { name: "Alex Fitzpatrick", posStr: "Proj MC", posInt: 80, score: "+20000", isMC: true, isWD: false },
+      { name: "Keita Nakajima", posStr: "Proj MC", posInt: 90, score: "+25000", isMC: true, isWD: false },
+      { name: "Matthew Jordan", posStr: "Proj MC", posInt: 100, score: "+30000", isMC: true, isWD: false },
+    ];
+
+    function App() {
+      const [leaderboard, setLeaderboard] = useState([]);
+      const [mode, setMode] = useState('demo');
+      const [loading, setLoading] = useState(true);
+      const [lastUpdate, setLastUpdate] = useState(null);
+      
+      const [cutBase, setCutBase] = useState(70);
+      const [cutPenalty, setCutPenalty] = useState(50);
+      const [showSettings, setShowSettings] = useState(false);
+
+      const fetchLeaderboard = async () => {
+        setLoading(true);
+        if (mode === 'demo') {
+          setTimeout(() => {
+            setLeaderboard(DEMO_LEADERBOARD);
+            setLastUpdate(new Date());
+            setLoading(false);
+          }, 600);
+          return;
+        } else if (mode === 'projections') {
+          setTimeout(() => {
+            setLeaderboard(PROJECTIONS_LEADERBOARD);
+            setLastUpdate(new Date());
+            setLoading(false);
+          }, 300);
+          return;
+        }
+
+        try {
+          const res = await fetch('https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard');
+          const data = await res.json();
+          
+          const events = data.events || [];
+          if (events.length === 0) throw new Error("No event data");
+          
+          const competitors = events[0].competitions[0].competitors;
+          
+          const parsedData = competitors.map(c => {
+            const posStr = c.status.position.displayName || "-";
+            let posInt = parseInt(posStr.replace(/\D/g, ''));
+            if (isNaN(posInt)) posInt = 0;
+            
+            const typeId = c.status.type.id;
+            const typeDesc = (c.status.type.description || "").toUpperCase();
+            const isMC = typeId === "3" || posStr.toUpperCase() === "MC" || typeDesc.includes("CUT");
+            const isWD = typeId === "4" || posStr.toUpperCase() === "WD" || typeDesc.includes("WITHDRAWN");
+            
+            return {
+              name: c.athlete.displayName,
+              posStr,
+              posInt,
+              score: c.score || "E",
+              isMC,
+              isWD
+            };
+          });
+          
+          setLeaderboard(parsedData);
+          setLastUpdate(new Date());
+        } catch (err) {
+          console.error("Error fetching live standings:", err);
+          setLeaderboard(DEMO_LEADERBOARD);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      useEffect(() => {
+        fetchLeaderboard();
+      }, [mode]);
+
+      const getPlayerScore = (playerName) => {
+        let player = leaderboard.find(p => p.name.toLowerCase() === playerName.toLowerCase());
+
+        if (!player) {
+          const nameParts = playerName.toLowerCase().trim().split(' ');
+          const lastName = nameParts[nameParts.length - 1];
+          const firstInitial = nameParts[0].charAt(0);
+
+          player = leaderboard.find(p => {
+            const pParts = p.name.toLowerCase().trim().split(' ');
+            const pLastName = pParts[pParts.length - 1];
+            const pFirstInitial = pParts[0].charAt(0);
+            return pLastName === lastName && pFirstInitial === firstInitial;
+          });
+        }
+
+        if (!player) {
+          player = leaderboard.find(p => p.name.toLowerCase().includes(playerName.toLowerCase()));
+        }
+
+        let pos = 1; 
+        let isCutOrWD = false;
+        let posStr = "-";
+        let realScore = "-";
+
+        if (player) {
+          posStr = player.posStr;
+          realScore = player.score;
+          if (player.isMC || player.isWD) {
+            pos = cutBase + cutPenalty;
+            isCutOrWD = true;
+          } else if (player.posInt > 0) {
+            pos = player.posInt;
+          }
+        }
+
+        const multiplier = PICK_COUNTS[playerName] || 1;
+        const totalPoints = pos * multiplier;
+
+        return {
+          name: player ? player.name : playerName,
+          posStr,
+          rawPos: pos,
+          realScore,
+          multiplier,
+          totalPoints,
+          isCutOrWD,
+          found: !!player
+        };
+      };
+
+      const poolResults = useMemo(() => {
+        return POOL_ENTRIES.map(entry => {
+          const picksScored = entry.picks.map(getPlayerScore);
+          const totalScore = picksScored.reduce((sum, p) => sum + p.totalPoints, 0);
+          return { ...entry, picksScored, totalScore };
+        }).sort((a, b) => a.totalScore - b.totalScore);
+      }, [leaderboard, cutBase, cutPenalty]);
+
+      return (
+        <div className="min-h-screen p-4 md:p-8">
+          <div className="max-w-7xl mx-auto space-y-8">
+            
+            <header className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-700">
+              <div>
+                <h1 className="text-3xl font-extrabold text-white flex items-center gap-3">
+                  <span className="text-emerald-500"><TrophyIcon /></span>
+                  British Open Pool 2026
+                </h1>
+                <p className="text-slate-400 mt-1 text-sm">
+                  Lowest combined finish wins. Duplicates = multiplier penalty. Missed cut = T{cutBase} + {cutPenalty}.
+                </p>
+              </div>
+              
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center bg-slate-900 rounded-lg p-1 border border-slate-700">
+                  <button 
+                    onClick={() => setMode('demo')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${mode === 'demo' ? 'bg-indigo-500 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    Demo
+                  </button>
+                  <button 
+                    onClick={() => setMode('projections')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${mode === 'projections' ? 'bg-amber-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    Projections
+                  </button>
+                  <button 
+                    onClick={() => setMode('live')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${mode === 'live' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    Live API
+                  </button>
+                </div>
+
+                <button 
+                  onClick={fetchLeaderboard} 
+                  disabled={loading}
+                  className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                >
+                  <RefreshIcon className={loading ? 'animate-spin' : ''} />
+                  Refresh
+                </button>
+                
+                <button 
+                  onClick={() => setShowSettings(!showSettings)}
+                  className="p-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors text-slate-300"
+                  title="Settings"
+                >
+                  <SettingsIcon />
+                </button>
+              </div>
+            </header>
+
+            {/* Settings Panel */}
+            {showSettings && (
+              <div className="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700 transition-all">
+                <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><SettingsIcon /> Pool Settings</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-400 mb-2">Base Cut Line Position</label>
+                    <input 
+                      type="number" 
+                      value={cutBase} 
+                      onChange={(e) => setCutBase(parseInt(e.target.value) || 0)}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-400 mb-2">Missed Cut Penalty</label>
+                    <input 
+                      type="number" 
+                      value={cutPenalty} 
+                      onChange={(e) => setCutPenalty(parseInt(e.target.value) || 0)}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between px-2 text-sm text-slate-400">
+              <div className="flex items-center gap-2">
+                {mode === 'live' && (
+                  <><span className="relative flex h-3 w-3"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span></span> Pulling real-time PGA data</>
+                )}
+                {mode === 'demo' && (
+                  <><span className="h-3 w-3 rounded-full bg-indigo-500"></span> Using simulated demo scores</>
+                )}
+                {mode === 'projections' && (
+                  <><span className="h-3 w-3 rounded-full bg-amber-500"></span> Using pre-tournament betting odds projections</>
+                )}
+              </div>
+              {lastUpdate && <span>Last updated: {lastUpdate.toLocaleTimeString()}</span>}
+            </div>
+
+            {}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              {poolResults.map((participant, index) => {
+                const isLeader = index === 0;
+                return (
+                  <div 
+                    key={participant.name} 
+                    className={`relative rounded-2xl overflow-hidden shadow-xl border ${isLeader ? 'border-amber-400/50 bg-slate-800' : 'border-slate-700 bg-slate-800/80'} transition-transform hover:-translate-y-1`}
+                  >
+                    <div className={`p-5 flex justify-between items-center border-b ${isLeader ? 'border-amber-400/20 bg-amber-400/5' : 'border-slate-700 bg-slate-900/50'}`}>
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${isLeader ? 'bg-amber-400 text-slate-900' : 'bg-slate-700 text-slate-300'}`}>
+                          {index + 1}
+                        </div>
+                        <h2 className="text-2xl font-bold tracking-tight">{participant.name}</h2>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm text-slate-400 font-medium uppercase tracking-wider mb-1">Total Points</div>
+                        <div className={`text-4xl font-black ${isLeader ? 'text-amber-400' : 'text-white'}`}>
+                          {participant.totalScore}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-0 overflow-x-auto">
+                      <table className="w-full text-left border-collapse min-w-[500px]">
+                        <thead>
+                          <tr className="bg-slate-900/80 text-slate-400 text-xs uppercase tracking-wider">
+                            <th className="px-5 py-3 font-medium">Golfer</th>
+                            <th className="px-5 py-3 font-medium text-center">{mode === 'projections' ? 'Odds' : 'Score'}</th>
+                            <th className="px-5 py-3 font-medium text-center">{mode === 'projections' ? 'Proj Pos' : 'Pos'}</th>
+                            <th className="px-5 py-3 font-medium text-center">Mult</th>
+                            <th className="px-5 py-3 font-medium text-right text-emerald-400">{mode === 'projections' ? 'Proj Pts' : 'Pts'}</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-700/50">
+                          {participant.picksScored.map((pick, i) => (
+                            <tr key={i} className="hover:bg-slate-700/20 transition-colors">
+                              <td className="px-5 py-3 flex items-center gap-2">
+                                <span className="font-semibold text-slate-200">{pick.name}</span>
+                                {!pick.found && <span title="Player not started or not found in data" className="text-amber-500"><AlertIcon /></span>}
+                              </td>
+                              <td className="px-5 py-3 text-center">
+                                <span className={`font-mono font-medium ${(mode !== 'projections' && pick.realScore.startsWith('-')) ? 'text-rose-400' : 'text-slate-300'}`}>
+                                  {pick.realScore}
+                                </span>
+                              </td>
+                              <td className="px-5 py-3 text-center">
+                                {pick.isCutOrWD ? (
+                                  <span className="inline-block px-2 py-1 bg-red-900/50 text-red-300 text-xs font-bold rounded whitespace-nowrap">
+                                    {mode === 'projections' ? 'Proj MC' : `MC (T${pick.rawPos})`}
+                                  </span>
+                                ) : (
+                                  <span className="font-medium text-slate-300">{pick.posStr}</span>
+                                )}
+                              </td>
+                              <td className="px-5 py-3 text-center">
+                                {pick.multiplier > 1 ? (
+                                  <span className="inline-flex items-center justify-center gap-1 px-2 py-1 bg-indigo-900/50 text-indigo-300 text-xs font-bold rounded-full border border-indigo-700/50 min-w-[40px]">
+                                    <UsersIcon /> {pick.multiplier}x
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-600 text-sm">—</span>
+                                )}
+                              </td>
+                              <td className="px-5 py-3 text-right">
+                                <span className="font-bold text-lg text-white">{pick.totalPoints}</span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
 </body>
 </html>
