@@ -20,6 +20,10 @@
     const { useState, useEffect, useMemo } = React;
     const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = window.Recharts;
 
+    // JSONBin Cloud Settings
+    const BIN_URL = 'https://api.jsonbin.io/v3/b/6a59032af5f4af5e299861dc';
+    const MASTER_KEY = '$2a$10$.9ULluEMSu/FzWqI2mgg8e31SNxUM89.IC53nJTFlTeE4rgg89ure';
+
     const TrophyIcon = () => (
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
     );
@@ -151,12 +155,24 @@
       const [cutPenalty, setCutPenalty] = useState(50);
       const [showSettings, setShowSettings] = useState(false);
 
-      const [history, setHistory] = useState(() => {
-        const saved = localStorage.getItem('poolHistory_2026');
-        return saved ? JSON.parse(saved) : [];
-      });
+      const [history, setHistory] = useState([]);
 
       const [sortConfig, setSortConfig] = useState({ key: 'pos', direction: 'asc' });
+
+      const fetchCloudHistory = async () => {
+        try {
+          const res = await fetch(BIN_URL, {
+            headers: { 'X-Master-Key': MASTER_KEY }
+          });
+          const data = await res.json();
+          if (data.record && data.record.history) {
+            return data.record.history;
+          }
+        } catch (e) {
+          console.error("Error loading history from cloud", e);
+        }
+        return [];
+      };
 
       const requestSort = (key) => {
         let direction = 'asc';
@@ -404,27 +420,50 @@
       useEffect(() => {
         if (loading || poolResults.length === 0) return;
 
-        const now = new Date();
-        const snapshot = {
-          timestamp: now.getTime(),
-          timeLabel: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        };
-        
-        poolResults.forEach(pr => {
-          snapshot[pr.name] = pr.totalScore;
-        });
+        let isMounted = true;
 
-        setHistory(prev => {
-          if (prev.length > 0) {
-            const last = prev[prev.length - 1];
+        const syncHistory = async () => {
+          const now = new Date();
+          const snapshot = {
+            timestamp: now.getTime(),
+            timeLabel: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          };
+          
+          poolResults.forEach(pr => {
+            snapshot[pr.name] = pr.totalScore;
+          });
+
+          const currentCloudHistory = await fetchCloudHistory();
+          
+          if (currentCloudHistory.length > 0) {
+            const last = currentCloudHistory[currentCloudHistory.length - 1];
             if (now.getTime() - last.timestamp < 10 * 60 * 1000) {
-              return prev; 
+              if(isMounted) setHistory(currentCloudHistory);
+              return; 
             }
           }
-          const newHistory = [...prev, snapshot];
-          localStorage.setItem('poolHistory_2026', JSON.stringify(newHistory));
-          return newHistory;
-        });
+          
+          const newHistory = [...currentCloudHistory, snapshot];
+          if(isMounted) setHistory(newHistory);
+          
+          try {
+            await fetch(BIN_URL, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Master-Key': MASTER_KEY
+              },
+              body: JSON.stringify({ history: newHistory })
+            });
+            console.log("History successfully saved to cloud!");
+          } catch (e) {
+            console.error("Error saving history to cloud", e);
+          }
+        };
+
+        syncHistory();
+
+        return () => { isMounted = false; };
       }, [poolResults, loading]);
 
       const chartData = useMemo(() => {
@@ -589,10 +628,21 @@
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-bold flex items-center gap-2"><SettingsIcon /> Pool Settings</h3>
                   <button 
-                    onClick={() => {
-                      if(window.confirm("Are you sure you want to clear the timeline chart history?")) {
-                        localStorage.removeItem('poolHistory_2026');
+                    onClick={async () => {
+                      if(window.confirm("Are you sure you want to clear the timeline chart history from the cloud?")) {
                         setHistory([]);
+                        try {
+                          await fetch(BIN_URL, {
+                            method: 'PUT',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'X-Master-Key': MASTER_KEY
+                            },
+                            body: JSON.stringify({ history: [] })
+                          });
+                        } catch (e) {
+                          console.error("Error deleting history", e);
+                        }
                       }
                     }}
                     className="text-xs bg-red-900/50 hover:bg-red-800 text-red-300 px-3 py-1.5 rounded border border-red-700 transition-colors"
@@ -633,13 +683,13 @@
             {view === 'pool' ? (
               <div className="space-y-8">
                 
-                {/* 1. Timeline Line Chart */}
+                {/* Timeline Line Chart on Top */}
                 <div className="bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-700">
                   <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
                     <div>
                       <h3 className="text-xl font-bold text-white flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-                        Tournament Timeline & Projections
+                        Tournament Timeline
                       </h3>
                     </div>
                   </div>
@@ -701,7 +751,7 @@
                   </div>
                 </div>
 
-                {/* 2. Pool Standings Grid */}
+                {/* Pool Standings Grid Below Chart */}
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                   {poolResults.map((participant, index) => {
                     const isLeader = index === 0;
