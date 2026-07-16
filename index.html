@@ -514,48 +514,48 @@
                         <table className="w-full text-sm text-left whitespace-nowrap">
                           <thead className="bg-slate-900/50 text-slate-400 text-xs uppercase font-semibold">
                             <tr>
-                              <th className="px-4 py-3">Golfer</th>
-                              <th className="px-4 py-3 text-center">Score</th>
-                              <th className="px-4 py-3 text-center">Thru</th>
-                              <th className="px-4 py-3 text-center w-12">Pos</th>
-                              <th className="px-4 py-3 text-center">Mult</th>
-                              <th className="px-4 py-3 text-right">Pts</th>
-                              <th className="px-4 py-3 text-center border-l-2 border-slate-700/50 bg-slate-900/80">Proj Pos</th>
-                              <th className="px-4 py-3 text-right bg-slate-900/80">Proj Pts</th>
+                              <th className="px-2 py-3 sm:px-3">Golfer</th>
+                              <th className="px-2 py-3 text-center sm:px-3">Score</th>
+                              <th className="px-2 py-3 text-center sm:px-3">Thru</th>
+                              <th className="px-2 py-3 text-center w-10 sm:px-3">Pos</th>
+                              <th className="px-2 py-3 text-center sm:px-3">Mult</th>
+                              <th className="px-2 py-3 text-right sm:px-3">Pts</th>
+                              <th className="px-2 py-3 text-center bg-slate-900/80 border-l-2 border-slate-700/50 sm:px-3">Proj Pos</th>
+                              <th className="px-2 py-3 text-right bg-slate-900/80 sm:px-3">Proj Pts</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-700/50">
                             {participant.picksScored.map((pick, i) => (
                               <tr key={i} className="hover:bg-slate-700/30 transition-colors">
-                                <td className="px-4 py-3 font-medium text-slate-200">
-                                  <div className="flex items-center gap-2">
+                                <td className="px-2 py-3 font-medium text-slate-200 sm:px-3">
+                                  <div className="flex items-center gap-1.5">
                                     {pick.name}
                                     {pick.isCutOrWD && <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-900/50 text-red-400 border border-red-800">MC</span>}
                                   </div>
                                 </td>
-                                <td className="px-4 py-3 text-center font-black text-emerald-400 text-base">
+                                <td className="px-2 py-3 text-center font-black text-emerald-400 text-base sm:px-3">
                                   {pick.realScore}
                                 </td>
-                                <td className="px-4 py-3 text-center text-slate-400">
+                                <td className="px-2 py-3 text-center text-slate-400 sm:px-3">
                                   {pick.thru}
                                 </td>
-                                <td className="px-4 py-3 text-center font-bold text-slate-300">
+                                <td className="px-2 py-3 text-center font-bold text-slate-300 sm:px-3">
                                   {pick.posStr}
                                 </td>
-                                <td className="px-4 py-3 text-center text-xs">
+                                <td className="px-2 py-3 text-center text-xs sm:px-3">
                                   {pick.multiplier > 1 ? (
                                     <span className="text-amber-500/70 font-semibold">{pick.multiplier}x</span>
                                   ) : (
                                     <span className="text-slate-600/50">1x</span>
                                   )}
                                 </td>
-                                <td className="px-4 py-3 text-right font-black text-white text-base">
+                                <td className="px-2 py-3 text-right font-black text-white text-base sm:px-3">
                                   {pick.totalPoints}
                                 </td>
-                                <td className="px-4 py-3 text-center font-bold text-indigo-300 border-l-2 border-slate-700/50 bg-slate-800/40">
+                                <td className="px-2 py-3 text-center font-bold text-indigo-300 bg-slate-800/30 border-l-2 border-slate-700/50 sm:px-3">
                                   {pick.projPosStr}
                                 </td>
-                                <td className="px-4 py-3 text-right font-bold text-indigo-200/80 bg-slate-800/40">
+                                <td className="px-2 py-3 text-right font-black text-indigo-200 text-base bg-slate-800/30 sm:px-3">
                                   {pick.projTotalPoints}
                                 </td>
                               </tr>
