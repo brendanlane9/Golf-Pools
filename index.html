@@ -1,920 +1,947 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-
-const BIN_URL_GET = 'https://api.jsonbin.io/v3/b/6a59032af5f4af5e299861dc/latest';
-const BIN_URL_PUT = 'https://api.jsonbin.io/v3/b/6a59032af5f4af5e299861dc';
-const MASTER_KEY = '$2a$10$.9ULluEMSu/FzWqI2mgg8e31SNxUM89.IC53nJTFlTeE4rgg89ure';
-
-const TrophyIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
-);
-const RefreshIcon = ({ className }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-);
-const AlertIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-);
-const SettingsIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-);
-
-const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
-
-const POOL_ENTRIES = [
-  { name: "Tito", picks: ["Matt Fitzpatrick", "Alex Fitzpatrick", "Tommy Fleetwood", "Justin Rose", "Brian Harman"] },
-  { name: "Daddy", picks: ["Matt Fitzpatrick", "Rory McIlroy", "Xander Schauffele", "Scottie Scheffler", "Chris Gotterup"] },
-  { name: "Fiffy", picks: ["Robert MacIntyre", "Chris Gotterup", "Tommy Fleetwood", "Viktor Hovland", "Tyrrell Hatton"] },
-  { name: "Austina", picks: ["Russell Henley", "Min Woo Lee", "Keita Nakajima", "Matthew Jordan", "Tom Kim"] },
-  { name: "Aunties", picks: ["Matt Fitzpatrick", "Tommy Fleetwood", "Justin Rose", "Chris Gotterup", "Russell Henley"] },
-  { name: "Auntie Dave", picks: ["Rory McIlroy", "Tommy Fleetwood", "Matt Fitzpatrick", "Xander Schauffele", "Chris Gotterup"] },
-  { name: "Jeans", picks: ["Brian Harman", "Tommy Fleetwood", "Matt Fitzpatrick", "Justin Rose", "Rory McIlroy"] },
-  { name: "Libenold", picks: ["Viktor Hovland", "Min Woo Lee", "Ludvig Aberg", "Justin Rose", "Matt Fitzpatrick"] }
-];
-
-const PLAYER_BASELINES = {
-  "Scottie Scheffler": -2.5,
-  "Xander Schauffele": -2.0,
-  "Rory McIlroy": -1.8,
-  "Ludvig Aberg": -1.5,
-  "Collin Morikawa": -1.5,
-  "Bryson DeChambeau": -1.5,
-  "Tommy Fleetwood": -1.2,
-  "Jon Rahm": -1.2,
-  "Matt Fitzpatrick": -1.0,
-  "Viktor Hovland": -1.0,
-  "Tyrrell Hatton": -1.0,
-  "Brian Harman": -0.8,
-  "Russell Henley": -0.8,
-  "Min Woo Lee": -0.6,
-  "Tom Kim": -0.6,
-  "Robert MacIntyre": -0.6,
-  "Justin Rose": -0.5,
-  "Chris Gotterup": 0.0,
-  "Alex Fitzpatrick": 0.0,
-  "Matthew Jordan": 0.0,
-  "Keita Nakajima": 0.0
-};
-
-const calculatePickFrequencies = () => {
-  const counts = {};
-  POOL_ENTRIES.forEach(entry => {
-    entry.picks.forEach(pick => {
-      counts[pick] = (counts[pick] || 0) + 1;
-    });
-  });
-  return counts;
-};
-const PICK_COUNTS = calculatePickFrequencies();
-
-const CustomDot = (props) => {
-  const { cx, cy, stroke, value, dataKey, payload } = props;
-  if (value == null || !cx || !cy) return null;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>British Open Pool 2026</title>
   
-  const isProj = dataKey && dataKey.includes('_Proj');
+  <!-- Tailwind & React Libraries -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone@7.23.6/babel.min.js"></script>
+  
+  <!-- Recharts and Dependencies -->
+  <script src="https://unpkg.com/prop-types@15.6/prop-types.min.js"></script>
+  <script src="https://unpkg.com/react-is@18.2.0/umd/react-is.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/recharts@2.1.9/umd/Recharts.js" crossorigin></script>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans">
+  <div id="root"></div>
 
-  if (isProj && payload.timeLabel !== "Sun 6:00 PM") return null;
-  if (!isProj && payload.timeLabel === "Sun 6:00 PM") return null;
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+    const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = window.Recharts;
 
-  const baseName = isProj ? dataKey.replace('_Proj', '') : dataKey;
-  const initials = baseName ? baseName.substring(0, 2).toUpperCase() : "";
+    const BIN_URL_GET = 'https://api.jsonbin.io/v3/b/6a59032af5f4af5e299861dc/latest';
+    const BIN_URL_PUT = 'https://api.jsonbin.io/v3/b/6a59032af5f4af5e299861dc';
+    const MASTER_KEY = '$2a$10$.9ULluEMSu/FzWqI2mgg8e31SNxUM89.IC53nJTFlTeE4rgg89ure';
 
-  return (
-    <g transform={`translate(${cx},${cy})`}>
-      <circle r={11} fill={stroke} stroke="#1e293b" strokeWidth={2} strokeDasharray={isProj ? "2 2" : "0"} />
-      <text x={0} y={3.5} textAnchor="middle" fill="#fff" fontSize={10} fontWeight="bold">
-        {initials}
-      </text>
-    </g>
-  );
-};
-
-const CustomTooltip = ({ active, payload, label }) => {
-  if (active && payload && payload.length) {
-    const isFuture = label === "Sun 6:00 PM";
-    
-    const displayData = payload.filter(p => {
-      if (p.value == null) return false;
-      const isProj = p.dataKey && p.dataKey.includes('_Proj');
-      return isFuture ? isProj : !isProj;
-    });
-
-    if (displayData.length === 0) return null;
-
-    displayData.sort((a, b) => a.value - b.value);
-
-    return (
-      <div className="bg-slate-800 border border-slate-600 p-3 rounded-xl shadow-2xl min-w-[140px] z-50">
-        <p className="text-slate-400 text-xs font-bold mb-2 pb-2 border-b border-slate-700">
-          {isFuture ? "Projected Finish" : label}
-        </p>
-        {displayData.map((entry, index) => {
-          const displayName = entry.dataKey.replace('_Proj', '');
-          return (
-            <div key={index} className="flex items-center justify-between gap-4 py-1">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: entry.color }}></span>
-                <span className="font-bold text-slate-200 text-sm">{displayName}</span>
-              </div>
-              <span className="font-black text-white text-sm">{entry.value}</span>
-            </div>
-          );
-        })}
-      </div>
+    const TrophyIcon = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
     );
-  }
-  return null;
-};
+    const RefreshIcon = ({ className }) => (
+      <svg className={className} xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+    );
+    const AlertIcon = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    );
+    const SettingsIcon = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    );
 
-export default function App() {
-  const [rawApiData, setRawApiData] = useState([]);
-  const [view, setView] = useState('pool');
-  const [loading, setLoading] = useState(true);
-  const [apiError, setApiError] = useState(null);
-  const [lastUpdate, setLastUpdate] = useState(null);
-  
-  const [cutBase, setCutBase] = useState(70);
-  const [cutPenalty, setCutPenalty] = useState(50);
-  const [showSettings, setShowSettings] = useState(false);
+    const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
 
-  const [history, setHistory] = useState([]);
-  const [historyLoaded, setHistoryLoaded] = useState(false);
-  const [sortConfig, setSortConfig] = useState({ key: 'pos', direction: 'asc' });
-  const [filterPicked, setFilterPicked] = useState(false);
+    const POOL_ENTRIES = [
+      { name: "Tito", picks: ["Matt Fitzpatrick", "Alex Fitzpatrick", "Tommy Fleetwood", "Justin Rose", "Brian Harman"] },
+      { name: "Daddy", picks: ["Matt Fitzpatrick", "Rory McIlroy", "Xander Schauffele", "Scottie Scheffler", "Chris Gotterup"] },
+      { name: "Fiffy", picks: ["Robert MacIntyre", "Chris Gotterup", "Tommy Fleetwood", "Viktor Hovland", "Tyrrell Hatton"] },
+      { name: "Austina", picks: ["Russell Henley", "Min Woo Lee", "Keita Nakajima", "Matthew Jordan", "Tom Kim"] },
+      { name: "Aunties", picks: ["Matt Fitzpatrick", "Tommy Fleetwood", "Justin Rose", "Chris Gotterup", "Russell Henley"] },
+      { name: "Auntie Dave", picks: ["Rory McIlroy", "Tommy Fleetwood", "Matt Fitzpatrick", "Xander Schauffele", "Chris Gotterup"] },
+      { name: "Jeans", picks: ["Brian Harman", "Tommy Fleetwood", "Matt Fitzpatrick", "Justin Rose", "Rory McIlroy"] },
+      { name: "Libenold", picks: ["Viktor Hovland", "Min Woo Lee", "Ludvig Aberg", "Justin Rose", "Matt Fitzpatrick"] }
+    ];
 
-  const fetchCloudHistory = async () => {
-    try {
-      const res = await fetch(BIN_URL_GET, {
-        headers: { 
-          'X-Master-Key': MASTER_KEY,
-          'Cache-Control': 'no-cache'
-        }
-      });
-      const data = await res.json();
-      if (data.record && data.record.history) {
-        return data.record.history;
-      }
-    } catch (e) {
-      console.error("Error loading history from cloud", e);
-    }
-    return null;
-  };
-
-  const requestSort = (key) => {
-    let direction = 'asc';
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
-    }
-    setSortConfig({ key, direction });
-  };
-
-  const renderSortArrow = (columnKey) => {
-    if (sortConfig?.key !== columnKey) return <span className="opacity-0 group-hover:opacity-50 ml-1 transition-opacity">↕</span>;
-    return <span className="ml-1 text-emerald-400 font-bold">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>;
-  };
-
-  const fetchLeaderboard = async () => {
-    setLoading(true);
-    setApiError(null);
-
-    try {
-      const res = await fetch('https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard');
-      const text = await res.text();
-      
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch (e) {
-        throw new Error("The PGA Live API is temporarily returning an HTML error page. Please try refreshing in a few minutes.");
-      }
-      
-      const events = data?.events || [];
-      if (events.length === 0 || !events[0]?.competitions?.[0]?.competitors) {
-        setApiError("Connection Issue: No live tournament data is currently available. The API may be updating tee times.");
-        setRawApiData([]);
-        setLoading(false);
-        return;
-      }
-      
-      setRawApiData(events[0].competitions[0].competitors);
-      setLastUpdate(new Date());
-    } catch (err) {
-      console.error("Error fetching live standings:", err);
-      setApiError(err.message || "Failed to fetch live data.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchLeaderboard();
-    
-    let isMounted = true;
-    fetchCloudHistory().then(cloudData => {
-      if (isMounted) {
-        if (cloudData) {
-          setHistory(cloudData);
-        }
-        setHistoryLoaded(true);
-      }
-    });
-
-    const intervalId = setInterval(() => {
-      console.log("Auto-refreshing dashboard data...");
-      fetchLeaderboard();
-    }, 15 * 60 * 1000);
-
-    return () => {
-      clearInterval(intervalId);
-      isMounted = false;
+    const PLAYER_BASELINES = {
+      "Scottie Scheffler": -2.5,
+      "Xander Schauffele": -2.0,
+      "Rory McIlroy": -1.8,
+      "Ludvig Aberg": -1.5,
+      "Collin Morikawa": -1.5,
+      "Bryson DeChambeau": -1.5,
+      "Tommy Fleetwood": -1.2,
+      "Jon Rahm": -1.2,
+      "Matt Fitzpatrick": -1.0,
+      "Viktor Hovland": -1.0,
+      "Tyrrell Hatton": -1.0,
+      "Brian Harman": -0.8,
+      "Russell Henley": -0.8,
+      "Min Woo Lee": -0.6,
+      "Tom Kim": -0.6,
+      "Robert MacIntyre": -0.6,
+      "Justin Rose": -0.5,
+      "Chris Gotterup": 0.0,
+      "Alex Fitzpatrick": 0.0,
+      "Matthew Jordan": 0.0,
+      "Keita Nakajima": 0.0
     };
-  }, []);
 
-  const leaderboard = useMemo(() => {
-    let parsedData = rawApiData.map(c => {
-      const name = c?.athlete?.displayName || "Unknown Golfer";
-      let posStr = c?.status?.position?.displayName || "-";
-      let posInt = parseInt(posStr.replace(/\D/g, ''));
-      if (isNaN(posInt)) posInt = 0;
-      
-      const typeId = c?.status?.type?.id;
-      const typeDesc = (c?.status?.type?.description || "").toUpperCase();
-      const isMC = typeId === "3" || posStr.toUpperCase() === "MC" || typeDesc.includes("CUT");
-      const isWD = typeId === "4" || posStr.toUpperCase() === "WD" || typeDesc.includes("WITHDRAWN");
-      
-      let thruRaw = c?.status?.displayClock || c?.status?.detail || "-";
-      let thru = thruRaw;
-      if (thru.includes('(')) {
-        const match = thru.match(/\(([^)]+)\)/);
-        if (match) thru = match[1];
-      }
+    const calculatePickFrequencies = () => {
+      const counts = {};
+      POOL_ENTRIES.forEach(entry => {
+        entry.picks.forEach(pick => {
+          counts[pick] = (counts[pick] || 0) + 1;
+        });
+      });
+      return counts;
+    };
+    const PICK_COUNTS = calculatePickFrequencies();
 
-      let holesToday = 0;
-      if (thru === 'F' || c?.status?.type?.completed) {
-        holesToday = 18;
-      } else if (thru !== '-' && !isNaN(parseInt(thru))) {
-        holesToday = parseInt(thru);
-      }
-      let round = c?.linescores ? c.linescores.length : 1;
-      let thruInt = ((round - 1) * 18) + holesToday;
+    const CustomDot = (props) => {
+      const { cx, cy, stroke, value, dataKey, payload } = props;
+      if (value == null || !cx || !cy) return null;
       
-      let today = "-";
-      if (c?.linescores && c.linescores.length > 0) {
-        for (let i = c.linescores.length - 1; i >= 0; i--) {
-          if (c.linescores[i]?.displayValue) {
-            today = c.linescores[i].displayValue;
-            break;
+      const isProj = dataKey && dataKey.includes('_Proj');
+
+      if (isProj && payload.timeLabel !== "Sun 6:00 PM") return null;
+      if (!isProj && payload.timeLabel === "Sun 6:00 PM") return null;
+
+      const baseName = isProj ? dataKey.replace('_Proj', '') : dataKey;
+      const initials = baseName ? baseName.substring(0, 2).toUpperCase() : "";
+
+      return (
+        <g transform={`translate(${cx},${cy})`}>
+          <circle r={11} fill={stroke} stroke="#1e293b" strokeWidth={2} strokeDasharray={isProj ? "2 2" : "0"} />
+          <text x={0} y={3.5} textAnchor="middle" fill="#fff" fontSize={10} fontWeight="bold">
+            {initials}
+          </text>
+        </g>
+      );
+    };
+
+    const CustomTooltip = ({ active, payload, label }) => {
+      if (active && payload && payload.length) {
+        const isFuture = label === "Sun 6:00 PM";
+        
+        const displayData = payload.filter(p => {
+          if (p.value == null) return false;
+          const isProj = p.dataKey && p.dataKey.includes('_Proj');
+          return isFuture ? isProj : !isProj;
+        });
+
+        if (displayData.length === 0) return null;
+
+        displayData.sort((a, b) => a.value - b.value);
+
+        return (
+          <div className="bg-slate-800 border border-slate-600 p-3 rounded-xl shadow-2xl min-w-[140px] z-50">
+            <p className="text-slate-400 text-xs font-bold mb-2 pb-2 border-b border-slate-700">
+              {isFuture ? "Projected Finish" : label}
+            </p>
+            {displayData.map((entry, index) => {
+              const displayName = entry.dataKey.replace('_Proj', '');
+              return (
+                <div key={index} className="flex items-center justify-between gap-4 py-1">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: entry.color }}></span>
+                    <span className="font-bold text-slate-200 text-sm">{displayName}</span>
+                  </div>
+                  <span className="font-black text-white text-sm">{entry.value}</span>
+                </div>
+              );
+            })}
+          </div>
+        );
+      }
+      return null;
+    };
+
+    function App() {
+      const [rawApiData, setRawApiData] = useState([]);
+      const [view, setView] = useState('pool');
+      const [loading, setLoading] = useState(true);
+      const [apiError, setApiError] = useState(null);
+      const [lastUpdate, setLastUpdate] = useState(null);
+      
+      const [cutBase, setCutBase] = useState(70);
+      const [cutPenalty, setCutPenalty] = useState(50);
+      const [showSettings, setShowSettings] = useState(false);
+
+      const [history, setHistory] = useState([]);
+      const [historyLoaded, setHistoryLoaded] = useState(false);
+      const [sortConfig, setSortConfig] = useState({ key: 'pos', direction: 'asc' });
+      const [filterPicked, setFilterPicked] = useState(false);
+
+      const fetchCloudHistory = async () => {
+        try {
+          const res = await fetch(BIN_URL_GET, {
+            headers: { 
+              'X-Master-Key': MASTER_KEY,
+              'Cache-Control': 'no-cache'
+            }
+          });
+          const data = await res.json();
+          if (data.record && data.record.history) {
+            return data.record.history;
+          }
+        } catch (e) {
+          console.error("Error loading history from cloud", e);
+        }
+        return null;
+      };
+
+      const requestSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+          direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+      };
+
+      const renderSortArrow = (columnKey) => {
+        if (sortConfig?.key !== columnKey) return <span className="opacity-0 group-hover:opacity-50 ml-1 transition-opacity">↕</span>;
+        return <span className="ml-1 text-emerald-400 font-bold">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>;
+      };
+
+      const fetchLeaderboard = async () => {
+        setLoading(true);
+        setApiError(null);
+
+        try {
+          const res = await fetch('https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard');
+          const text = await res.text();
+          
+          let data;
+          try {
+            data = JSON.parse(text);
+          } catch (e) {
+            throw new Error("The PGA Live API is temporarily returning an HTML error page. Please try refreshing in a few minutes.");
+          }
+          
+          const events = data?.events || [];
+          if (events.length === 0 || !events[0]?.competitions?.[0]?.competitors) {
+            setApiError("Connection Issue: No live tournament data is currently available. The API may be updating tee times.");
+            setRawApiData([]);
+            setLoading(false);
+            return;
+          }
+          
+          setRawApiData(events[0].competitions[0].competitors);
+          setLastUpdate(new Date());
+        } catch (err) {
+          console.error("Error fetching live standings:", err);
+          setApiError(err.message || "Failed to fetch live data.");
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      useEffect(() => {
+        fetchLeaderboard();
+        
+        let isMounted = true;
+        fetchCloudHistory().then(cloudData => {
+          if (isMounted) {
+            if (cloudData) {
+              setHistory(cloudData);
+            }
+            setHistoryLoaded(true);
+          }
+        });
+
+        const intervalId = setInterval(() => {
+          console.log("Auto-refreshing dashboard data...");
+          fetchLeaderboard();
+        }, 15 * 60 * 1000);
+
+        return () => {
+          clearInterval(intervalId);
+          isMounted = false;
+        };
+      }, []);
+
+      const leaderboard = useMemo(() => {
+        let parsedData = rawApiData.map(c => {
+          const name = c?.athlete?.displayName || "Unknown Golfer";
+          let posStr = c?.status?.position?.displayName || "-";
+          let posInt = parseInt(posStr.replace(/\D/g, ''));
+          if (isNaN(posInt)) posInt = 0;
+          
+          const typeId = c?.status?.type?.id;
+          const typeDesc = (c?.status?.type?.description || "").toUpperCase();
+          const isMC = typeId === "3" || posStr.toUpperCase() === "MC" || typeDesc.includes("CUT");
+          const isWD = typeId === "4" || posStr.toUpperCase() === "WD" || typeDesc.includes("WITHDRAWN");
+          
+          let thruRaw = c?.status?.displayClock || c?.status?.detail || "-";
+          let thru = thruRaw;
+          if (thru.includes('(')) {
+            const match = thru.match(/\(([^)]+)\)/);
+            if (match) thru = match[1];
+          }
+
+          let holesToday = 0;
+          if (thru === 'F' || c?.status?.type?.completed) {
+            holesToday = 18;
+          } else if (thru !== '-' && !isNaN(parseInt(thru))) {
+            holesToday = parseInt(thru);
+          }
+          let round = c?.linescores ? c.linescores.length : 1;
+          let thruInt = ((round - 1) * 18) + holesToday;
+          
+          let today = "-";
+          if (c?.linescores && c.linescores.length > 0) {
+            for (let i = c.linescores.length - 1; i >= 0; i--) {
+              if (c.linescores[i]?.displayValue) {
+                today = c.linescores[i].displayValue;
+                break;
+              }
+            }
+          }
+
+          let displayScore = "E";
+          if (c?.score != null) {
+            let tempScore = typeof c.score === 'object' ? c.score?.displayValue : c.score;
+            if (tempScore === 0 || tempScore === "0") {
+              displayScore = "E";
+            } else if (typeof tempScore === 'number' && tempScore > 0) {
+              displayScore = `+${tempScore}`;
+            } else {
+              displayScore = tempScore ? tempScore.toString() : "E";
+            }
+          }
+
+          let scoreInt = displayScore === "E" ? 0 : parseInt(displayScore.replace('+', '')) || 0;
+
+          let baselinePerRound = PLAYER_BASELINES[name] !== undefined ? PLAYER_BASELINES[name] : +0.5;
+          let holesRemaining = 72 - thruInt;
+          if (holesRemaining < 0) holesRemaining = 0;
+          let projScore = scoreInt + ((baselinePerRound / 18) * holesRemaining);
+
+          return { name, posStr, posInt, score: displayScore, scoreInt, thru, thruInt, isMC, isWD, projScore };
+        });
+
+        let projectedData = [...parsedData].sort((a, b) => {
+          if (a.isMC || a.isWD) return 1;
+          if (b.isMC || b.isWD) return -1;
+          return a.projScore - b.projScore;
+        });
+
+        let currentProjPos = 1;
+        let previousProjScore = -9999;
+        const projPosMap = {};
+
+        projectedData.forEach((p, i) => {
+          if (p.isMC || p.isWD) {
+            projPosMap[p.name] = { str: "MC", int: cutBase + cutPenalty };
+            return;
+          }
+
+          let rounded = Math.round(p.projScore * 10);
+          if (rounded !== previousProjScore) {
+            currentProjPos = i + 1;
+            previousProjScore = rounded;
+          }
+
+          let isProjectedCut = currentProjPos > cutBase;
+
+          projPosMap[p.name] = {
+            str: isProjectedCut ? "Proj MC" : `P${currentProjPos}`,
+            int: isProjectedCut ? (cutBase + cutPenalty) : currentProjPos
+          };
+        });
+
+        return parsedData.map(p => ({
+          ...p,
+          projPosStr: projPosMap[p.name].str,
+          projPosInt: projPosMap[p.name].int
+        }));
+      }, [rawApiData, cutBase, cutPenalty]);
+
+      const getPickersForGolfer = (leaderboardName) => {
+        if (!leaderboardName) return [];
+        return POOL_ENTRIES.filter(entry => {
+          return entry.picks.some(pick => {
+            if (!pick) return false;
+            if (pick.toLowerCase() === leaderboardName.toLowerCase()) return true;
+            
+            const pParts = pick.toLowerCase().trim().split(' ');
+            const pLastName = pParts[pParts.length - 1];
+            const pFirstInitial = pParts[0].charAt(0);
+            
+            const lParts = leaderboardName.toLowerCase().trim().split(' ');
+            const lLastName = lParts[lParts.length - 1];
+            const lFirstInitial = lParts[0].charAt(0);
+            
+            if (pLastName === lLastName && pFirstInitial === lFirstInitial) return true;
+            if (leaderboardName.toLowerCase().includes(pick.toLowerCase())) return true;
+            
+            return false;
+          });
+        }).map(e => e.name);
+      };
+
+      const getPlayerScore = (playerName) => {
+        if (!playerName) return { name: "Unknown", posStr: "-", rawPos: 1, realScore: "-", thru: "-", multiplier: 1, totalPoints: 0, isCutOrWD: false, found: false };
+        
+        let player = leaderboard.find(p => p?.name?.toLowerCase() === playerName.toLowerCase());
+
+        if (!player) {
+          const nameParts = playerName.toLowerCase().trim().split(' ');
+          const lastName = nameParts[nameParts.length - 1];
+          const firstInitial = nameParts[0].charAt(0);
+
+          player = leaderboard.find(p => {
+            if (!p?.name) return false;
+            const pParts = p.name.toLowerCase().trim().split(' ');
+            const pLastName = pParts[pParts.length - 1];
+            const pFirstInitial = pParts[0].charAt(0);
+            return pLastName === lastName && pFirstInitial === firstInitial;
+          });
+        }
+
+        let pos = 1; 
+        let isCutOrWD = false;
+        let posStr = "-";
+        let realScore = "-";
+        let thru = "-";
+        let projPosInt = 1;
+        let projPosStr = "-";
+
+        if (player) {
+          posStr = player.posStr;
+          realScore = player.score;
+          thru = player.thru || "-";
+          projPosStr = player.projPosStr;
+          projPosInt = player.projPosInt;
+
+          if (player.isMC || player.isWD) {
+            pos = cutBase + cutPenalty;
+            isCutOrWD = true;
+          } else if (player.posInt > 0) {
+            pos = player.posInt;
           }
         }
-      }
 
-      // ** FIX: Properly parsing Even Par to prevent overwriting with daily score **
-      let displayScore = "E";
-      if (c?.score != null) {
-        let tempScore = typeof c.score === 'object' ? c.score?.displayValue : c.score;
-        if (tempScore === 0 || tempScore === "0") {
-          displayScore = "E";
-        } else if (typeof tempScore === 'number' && tempScore > 0) {
-          displayScore = `+${tempScore}`;
-        } else {
-          displayScore = tempScore ? tempScore.toString() : "E";
-        }
-      }
+        const multiplier = PICK_COUNTS[playerName] || 1;
+        const totalPoints = pos * multiplier;
+        const projTotalPoints = projPosInt * multiplier;
 
-      let scoreInt = displayScore === "E" ? 0 : parseInt(displayScore.replace('+', '')) || 0;
-
-      let baselinePerRound = PLAYER_BASELINES[name] !== undefined ? PLAYER_BASELINES[name] : +0.5;
-      let holesRemaining = 72 - thruInt;
-      if (holesRemaining < 0) holesRemaining = 0;
-      let projScore = scoreInt + ((baselinePerRound / 18) * holesRemaining);
-
-      return { name, posStr, posInt, score: displayScore, scoreInt, thru, thruInt, isMC, isWD, projScore };
-    });
-
-    let projectedData = [...parsedData].sort((a, b) => {
-      if (a.isMC || a.isWD) return 1;
-      if (b.isMC || b.isWD) return -1;
-      return a.projScore - b.projScore;
-    });
-
-    let currentProjPos = 1;
-    let previousProjScore = -9999;
-    const projPosMap = {};
-
-    projectedData.forEach((p, i) => {
-      if (p.isMC || p.isWD) {
-        projPosMap[p.name] = { str: "MC", int: cutBase + cutPenalty };
-        return;
-      }
-
-      let rounded = Math.round(p.projScore * 10);
-      if (rounded !== previousProjScore) {
-        currentProjPos = i + 1;
-        previousProjScore = rounded;
-      }
-
-      let isProjectedCut = currentProjPos > cutBase;
-
-      projPosMap[p.name] = {
-        str: isProjectedCut ? "Proj MC" : `P${currentProjPos}`,
-        int: isProjectedCut ? (cutBase + cutPenalty) : currentProjPos
-      };
-    });
-
-    return parsedData.map(p => ({
-      ...p,
-      projPosStr: projPosMap[p.name].str,
-      projPosInt: projPosMap[p.name].int
-    }));
-  }, [rawApiData, cutBase, cutPenalty]);
-
-  const getPickersForGolfer = (leaderboardName) => {
-    if (!leaderboardName) return [];
-    return POOL_ENTRIES.filter(entry => {
-      return entry.picks.some(pick => {
-        if (!pick) return false;
-        if (pick.toLowerCase() === leaderboardName.toLowerCase()) return true;
-        
-        const pParts = pick.toLowerCase().trim().split(' ');
-        const pLastName = pParts[pParts.length - 1];
-        const pFirstInitial = pParts[0].charAt(0);
-        
-        const lParts = leaderboardName.toLowerCase().trim().split(' ');
-        const lLastName = lParts[lParts.length - 1];
-        const lFirstInitial = lParts[0].charAt(0);
-        
-        if (pLastName === lLastName && pFirstInitial === lFirstInitial) return true;
-        if (leaderboardName.toLowerCase().includes(pick.toLowerCase())) return true;
-        
-        return false;
-      });
-    }).map(e => e.name);
-  };
-
-  const getPlayerScore = (playerName) => {
-    if (!playerName) return { name: "Unknown", posStr: "-", rawPos: 1, realScore: "-", thru: "-", multiplier: 1, totalPoints: 0, isCutOrWD: false, found: false };
-    
-    let player = leaderboard.find(p => p?.name?.toLowerCase() === playerName.toLowerCase());
-
-    if (!player) {
-      const nameParts = playerName.toLowerCase().trim().split(' ');
-      const lastName = nameParts[nameParts.length - 1];
-      const firstInitial = nameParts[0].charAt(0);
-
-      player = leaderboard.find(p => {
-        if (!p?.name) return false;
-        const pParts = p.name.toLowerCase().trim().split(' ');
-        const pLastName = pParts[pParts.length - 1];
-        const pFirstInitial = pParts[0].charAt(0);
-        return pLastName === lastName && pFirstInitial === firstInitial;
-      });
-    }
-
-    let pos = 1; 
-    let isCutOrWD = false;
-    let posStr = "-";
-    let realScore = "-";
-    let thru = "-";
-    let projPosInt = 1;
-    let projPosStr = "-";
-
-    if (player) {
-      posStr = player.posStr;
-      realScore = player.score;
-      thru = player.thru || "-";
-      projPosStr = player.projPosStr;
-      projPosInt = player.projPosInt;
-
-      if (player.isMC || player.isWD) {
-        pos = cutBase + cutPenalty;
-        isCutOrWD = true;
-      } else if (player.posInt > 0) {
-        pos = player.posInt;
-      }
-    }
-
-    const multiplier = PICK_COUNTS[playerName] || 1;
-    const totalPoints = pos * multiplier;
-    const projTotalPoints = projPosInt * multiplier;
-
-    return {
-      name: player ? player.name : playerName,
-      posStr,
-      rawPos: pos,
-      realScore,
-      thru,
-      multiplier,
-      totalPoints,
-      projPosStr,
-      projTotalPoints,
-      isCutOrWD,
-      found: !!player
-    };
-  };
-
-  const poolResults = useMemo(() => {
-    return POOL_ENTRIES.map(entry => {
-      const picksScored = entry.picks.map(getPlayerScore);
-      
-      // Sort individual picks from best pos to worst pos
-      picksScored.sort((a, b) => a.rawPos - b.rawPos);
-
-      const totalScore = picksScored.reduce((sum, p) => sum + p.totalPoints, 0);
-      const projTotalScore = picksScored.reduce((sum, p) => sum + p.projTotalPoints, 0);
-      return { ...entry, picksScored, totalScore, projTotalScore };
-    }).sort((a, b) => a.totalScore - b.totalScore);
-  }, [leaderboard, cutBase, cutPenalty]);
-
-  useEffect(() => {
-    if (loading || poolResults.length === 0 || !historyLoaded) return;
-
-    const now = new Date();
-    let lastPointTime = 0;
-    
-    if (history.length > 0) {
-      lastPointTime = history[history.length - 1].timestamp;
-    }
-
-    if (now.getTime() - lastPointTime < 15 * 60 * 1000) {
-      return; 
-    }
-    
-    const snapshot = {
-      timestamp: now.getTime(),
-      timeLabel: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-    
-    poolResults.forEach(pr => {
-      snapshot[pr.name] = pr.totalScore;
-    });
-
-    const newHistory = [...history, snapshot];
-    setHistory(newHistory); 
-    
-    fetch(BIN_URL_PUT, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Master-Key': MASTER_KEY
-      },
-      body: JSON.stringify({ history: newHistory })
-    }).catch(e => console.error("Cloud save failed", e));
-
-  }, [poolResults, loading, historyLoaded, history]);
-
-  const chartData = useMemo(() => {
-    let data = [...history];
-    if (poolResults.length === 0 || data.length === 0) return data;
-
-    const lastHistoryPoint = data[data.length - 1];
-
-    const linkPoint = {
-      timestamp: lastHistoryPoint.timestamp,
-      timeLabel: lastHistoryPoint.timeLabel,
-    };
-    poolResults.forEach(pr => {
-      linkPoint[`${pr.name}_Proj`] = pr.totalScore; 
-    });
-
-    data[data.length - 1] = { ...data[data.length - 1], ...linkPoint };
-
-    const tourneyEnd = new Date('2026-07-19T18:00:00-04:00').getTime();
-    const futureTimestamp = Math.max(tourneyEnd, lastHistoryPoint.timestamp + 3600000); 
-
-    const futurePoint = {
-      timestamp: futureTimestamp,
-      timeLabel: "Sun 6:00 PM"
-    };
-    poolResults.forEach(pr => {
-      futurePoint[`${pr.name}_Proj`] = pr.projTotalScore;
-    });
-
-    data.push(futurePoint);
-    return data;
-  }, [history, poolResults]);
-
-  const enhancedLeaderboard = useMemo(() => {
-    let sortedData = leaderboard.map(golfer => {
-      const pickers = getPickersForGolfer(golfer.name);
-      
-      let pos = 1;
-      if (golfer.isMC || golfer.isWD) pos = cutBase + cutPenalty;
-      else if (golfer.posInt > 0) pos = golfer.posInt;
-      
-      const mult = PICK_COUNTS[golfer.name] || 1;
-      const poolPts = pos * mult;
-      const projPoolPts = golfer.projPosInt * mult;
-      const isPicked = pickers.length > 0;
-
-      const parseToPar = (val) => {
-        if (!val || val === '-' || val === 'E' || val === 'MC') return 0;
-        return parseFloat(val.toString().replace('+', '')) || 0;
+        return {
+          name: player ? player.name : playerName,
+          posStr,
+          rawPos: pos,
+          realScore,
+          thru,
+          multiplier,
+          totalPoints,
+          projPosStr,
+          projTotalPoints,
+          isCutOrWD,
+          found: !!player
+        };
       };
 
-      return {
-        ...golfer,
-        pickers,
-        isPicked,
-        poolPts,
-        projPoolPts,
-        scoreInt: parseToPar(golfer.score)
-      };
-    });
-
-    if (sortConfig !== null) {
-      sortedData.sort((a, b) => {
-        let aValue, bValue;
-        switch (sortConfig.key) {
-          case 'score': aValue = a.scoreInt; bValue = b.scoreInt; break;
-          case 'thru': aValue = a.thruInt; bValue = b.thruInt; break;
-          case 'pos': 
-            aValue = a.posInt === 0 ? 9999 : a.posInt; 
-            bValue = b.posInt === 0 ? 9999 : b.posInt; 
-            break;
-          case 'projPos':
-            aValue = a.projPosInt === 0 ? 9999 : a.projPosInt;
-            bValue = b.projPosInt === 0 ? 9999 : b.projPosInt;
-            break;
-          case 'name': aValue = a.name; bValue = b.name; break;
-          case 'picked': aValue = a.pickers.length; bValue = b.pickers.length; break;
-          case 'pts': 
-            aValue = a.isPicked ? a.poolPts : (sortConfig.direction === 'asc' ? 99999 : -99999);
-            bValue = b.isPicked ? b.poolPts : (sortConfig.direction === 'asc' ? 99999 : -99999);
-            break;
-          case 'projPts': 
-            aValue = a.isPicked ? a.projPoolPts : (sortConfig.direction === 'asc' ? 99999 : -99999);
-            bValue = b.isPicked ? b.projPoolPts : (sortConfig.direction === 'asc' ? 99999 : -99999);
-            break;
-          default: aValue = a.posInt; bValue = b.posInt;
-        }
-        
-        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
-        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
-        return 0;
-      });
-    }
-    return sortedData;
-  }, [leaderboard, sortConfig, cutBase, cutPenalty]);
-
-  const displayLeaderboard = useMemo(() => {
-    if (filterPicked) return enhancedLeaderboard.filter(g => g.isPicked);
-    return enhancedLeaderboard;
-  }, [enhancedLeaderboard, filterPicked]);
-
-  return (
-    <div className="min-h-screen p-4 md:p-8 bg-slate-900 text-slate-100 font-sans">
-      <div className="max-w-7xl mx-auto space-y-8">
-        
-        <header className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-700">
-          <div>
-            <h1 className="text-3xl font-extrabold text-white flex items-center gap-3">
-              <span className="text-emerald-500"><TrophyIcon /></span>
-              British Open Pool 2026
-            </h1>
-            <p className="text-slate-400 mt-1 text-sm">
-              Lowest combined finish wins. Duplicates = multiplier penalty. Missed cut = T{cutBase} + {cutPenalty}.
-            </p>
-          </div>
+      const poolResults = useMemo(() => {
+        return POOL_ENTRIES.map(entry => {
+          const picksScored = entry.picks.map(getPlayerScore);
           
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center bg-slate-900 rounded-lg p-1 border border-slate-700">
-              <button 
-                onClick={() => setView('pool')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${view === 'pool' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
-              >
-                Pool Standings
-              </button>
-              <button 
-                onClick={() => setView('leaderboard')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${view === 'leaderboard' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
-              >
-                PGA Leaderboard
-              </button>
-            </div>
+          // Sort individual picks from best pos to worst pos
+          picksScored.sort((a, b) => a.rawPos - b.rawPos);
 
-            <button 
-              onClick={() => {
-                fetchLeaderboard();
-                console.log("Manual refresh requested");
-              }} 
-              disabled={loading}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
-            >
-              <RefreshIcon className={loading ? 'animate-spin' : ''} />
-              Refresh
-            </button>
+          const totalScore = picksScored.reduce((sum, p) => sum + p.totalPoints, 0);
+          const projTotalScore = picksScored.reduce((sum, p) => sum + p.projTotalPoints, 0);
+          return { ...entry, picksScored, totalScore, projTotalScore };
+        }).sort((a, b) => a.totalScore - b.totalScore);
+      }, [leaderboard, cutBase, cutPenalty]);
+
+      useEffect(() => {
+        if (loading || poolResults.length === 0 || !historyLoaded) return;
+
+        const now = new Date();
+        let lastPointTime = 0;
+        
+        if (history.length > 0) {
+          lastPointTime = history[history.length - 1].timestamp;
+        }
+
+        if (now.getTime() - lastPointTime < 15 * 60 * 1000) {
+          return; 
+        }
+        
+        const snapshot = {
+          timestamp: now.getTime(),
+          timeLabel: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        
+        poolResults.forEach(pr => {
+          snapshot[pr.name] = pr.totalScore;
+        });
+
+        const newHistory = [...history, snapshot];
+        setHistory(newHistory); 
+        
+        fetch(BIN_URL_PUT, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Master-Key': MASTER_KEY
+          },
+          body: JSON.stringify({ history: newHistory })
+        }).catch(e => console.error("Cloud save failed", e));
+
+      }, [poolResults, loading, historyLoaded, history]);
+
+      const chartData = useMemo(() => {
+        let data = [...history];
+        if (poolResults.length === 0 || data.length === 0) return data;
+
+        const lastHistoryPoint = data[data.length - 1];
+
+        const linkPoint = {
+          timestamp: lastHistoryPoint.timestamp,
+          timeLabel: lastHistoryPoint.timeLabel,
+        };
+        poolResults.forEach(pr => {
+          linkPoint[`${pr.name}_Proj`] = pr.totalScore; 
+        });
+
+        data[data.length - 1] = { ...data[data.length - 1], ...linkPoint };
+
+        const tourneyEnd = new Date('2026-07-19T18:00:00-04:00').getTime();
+        const futureTimestamp = Math.max(tourneyEnd, lastHistoryPoint.timestamp + 3600000); 
+
+        const futurePoint = {
+          timestamp: futureTimestamp,
+          timeLabel: "Sun 6:00 PM"
+        };
+        poolResults.forEach(pr => {
+          futurePoint[`${pr.name}_Proj`] = pr.projTotalScore;
+        });
+
+        data.push(futurePoint);
+        return data;
+      }, [history, poolResults]);
+
+      const enhancedLeaderboard = useMemo(() => {
+        let sortedData = leaderboard.map(golfer => {
+          const pickers = getPickersForGolfer(golfer.name);
+          
+          let pos = 1;
+          if (golfer.isMC || golfer.isWD) pos = cutBase + cutPenalty;
+          else if (golfer.posInt > 0) pos = golfer.posInt;
+          
+          const mult = PICK_COUNTS[golfer.name] || 1;
+          const poolPts = pos * mult;
+          const projPoolPts = golfer.projPosInt * mult;
+          const isPicked = pickers.length > 0;
+
+          const parseToPar = (val) => {
+            if (!val || val === '-' || val === 'E' || val === 'MC') return 0;
+            return parseFloat(val.toString().replace('+', '')) || 0;
+          };
+
+          return {
+            ...golfer,
+            pickers,
+            isPicked,
+            poolPts,
+            projPoolPts,
+            scoreInt: parseToPar(golfer.score)
+          };
+        });
+
+        if (sortConfig !== null) {
+          sortedData.sort((a, b) => {
+            let aValue, bValue;
+            switch (sortConfig.key) {
+              case 'score': aValue = a.scoreInt; bValue = b.scoreInt; break;
+              case 'thru': aValue = a.thruInt; bValue = b.thruInt; break;
+              case 'pos': 
+                aValue = a.posInt === 0 ? 9999 : a.posInt; 
+                bValue = b.posInt === 0 ? 9999 : b.posInt; 
+                break;
+              case 'projPos':
+                aValue = a.projPosInt === 0 ? 9999 : a.projPosInt;
+                bValue = b.projPosInt === 0 ? 9999 : b.projPosInt;
+                break;
+              case 'name': aValue = a.name; bValue = b.name; break;
+              case 'picked': aValue = a.pickers.length; bValue = b.pickers.length; break;
+              case 'pts': 
+                aValue = a.isPicked ? a.poolPts : (sortConfig.direction === 'asc' ? 99999 : -99999);
+                bValue = b.isPicked ? b.poolPts : (sortConfig.direction === 'asc' ? 99999 : -99999);
+                break;
+              case 'projPts': 
+                aValue = a.isPicked ? a.projPoolPts : (sortConfig.direction === 'asc' ? 99999 : -99999);
+                bValue = b.isPicked ? b.projPoolPts : (sortConfig.direction === 'asc' ? 99999 : -99999);
+                break;
+              default: aValue = a.posInt; bValue = b.posInt;
+            }
             
-            <button 
-              onClick={() => setShowSettings(!showSettings)}
-              className="p-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors text-slate-300"
-              title="Settings"
-            >
-              <SettingsIcon />
-            </button>
-          </div>
-        </header>
+            if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+            if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+            return 0;
+          });
+        }
+        return sortedData;
+      }, [leaderboard, sortConfig, cutBase, cutPenalty]);
 
-        {apiError && (
-          <div className="bg-amber-900/50 border border-amber-500 text-amber-200 p-4 rounded-xl flex items-center gap-3">
-            <AlertIcon />
-            <div>
-              <h3 className="font-bold">Notice</h3>
-              <p className="text-sm opacity-80">{apiError}</p>
-            </div>
-          </div>
-        )}
+      const displayLeaderboard = useMemo(() => {
+        if (filterPicked) return enhancedLeaderboard.filter(g => g.isPicked);
+        return enhancedLeaderboard;
+      }, [enhancedLeaderboard, filterPicked]);
 
-        {showSettings && (
-          <div className="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700 transition-all">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold flex items-center gap-2"><SettingsIcon /> Pool Settings</h3>
-              <button 
-                onClick={async () => {
-                  if(window.confirm("Are you sure you want to clear the timeline chart history from the cloud?")) {
-                    setHistory([]);
-                    try {
-                      await fetch(BIN_URL_PUT, {
-                        method: 'PUT',
-                        headers: {
-                          'Content-Type': 'application/json',
-                          'X-Master-Key': MASTER_KEY
-                        },
-                        body: JSON.stringify({ history: [] })
-                      });
-                    } catch (e) {
-                      console.error("Error deleting history", e);
-                    }
-                  }
-                }}
-                className="text-xs bg-red-900/50 hover:bg-red-800 text-red-300 px-3 py-1.5 rounded border border-red-700 transition-colors"
-              >
-                Clear Chart History
-              </button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-slate-400 mb-2">Base Cut Line Position</label>
-                <input 
-                  type="number" 
-                  value={cutBase} 
-                  onChange={(e) => setCutBase(parseInt(e.target.value) || 0)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-400 mb-2">Missed Cut Penalty</label>
-                <input 
-                  type="number" 
-                  value={cutPenalty} 
-                  onChange={(e) => setCutPenalty(parseInt(e.target.value) || 0)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="flex items-center justify-between px-2 text-sm text-slate-400">
-          <div className="flex items-center gap-2">
-            <span className="relative flex h-3 w-3"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span><span className="relative inline-flex rounded-full h-3 w-3 bg-indigo-500"></span></span> Real-time PGA scoring with live mathematical finish projections (Auto-refreshes every 15m)
-          </div>
-          {lastUpdate && <span>Last updated: {lastUpdate.toLocaleTimeString()}</span>}
-        </div>
-
-        {view === 'pool' ? (
-          <div className="space-y-8">
+      return (
+        <div className="min-h-screen p-4 md:p-8 bg-slate-900 text-slate-100 font-sans">
+          <div className="max-w-7xl mx-auto space-y-8">
             
-            <div className="bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-700">
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
-                <div>
-                  <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-                    Tournament Timeline & Projections
-                  </h3>
-                </div>
+            <header className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-700">
+              <div>
+                <h1 className="text-3xl font-extrabold text-white flex items-center gap-3">
+                  <span className="text-emerald-500"><TrophyIcon /></span>
+                  British Open Pool 2026
+                </h1>
+                <p className="text-slate-400 mt-1 text-sm">
+                  Lowest combined finish wins. Duplicates = multiplier penalty. Missed cut = T{cutBase} + {cutPenalty}.
+                </p>
               </div>
               
-              <div className="h-[400px] w-full" style={{ fontFamily: 'inherit' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
-                    <XAxis 
-                      dataKey="timeLabel" 
-                      stroke="#94a3b8" 
-                      fontSize={12} 
-                      tickMargin={10} 
-                    />
-                    <YAxis 
-                      reversed={true} 
-                      stroke="#94a3b8" 
-                      fontSize={12}
-                      domain={['auto', 'auto']}
-                    />
-                    <Tooltip 
-                      content={<CustomTooltip />}
-                      cursor={{ stroke: '#475569', strokeWidth: 1, strokeDasharray: '4 4' }}
-                    />
-                    
-                    {POOL_ENTRIES.map((entry, index) => {
-                      const color = CHART_COLORS[index % CHART_COLORS.length];
-                      return (
-                        <React.Fragment key={entry.name}>
-                          <Line 
-                            type="monotone" 
-                            dataKey={entry.name} 
-                            name={entry.name}
-                            stroke={color} 
-                            strokeWidth={3} 
-                            dot={<CustomDot />}
-                            activeDot={<CustomDot />} 
-                            connectNulls={true}
-                          />
-                          <Line 
-                            type="monotone" 
-                            dataKey={`${entry.name}_Proj`} 
-                            name={`${entry.name} Proj`}
-                            stroke={color} 
-                            strokeWidth={2} 
-                            strokeDasharray="5 5" 
-                            dot={<CustomDot />}
-                            activeDot={<CustomDot />}
-                            connectNulls={true}
-                            opacity={0.6}
-                          />
-                        </React.Fragment>
-                      );
-                    })}
-                  </LineChart>
-                </ResponsiveContainer>
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center bg-slate-900 rounded-lg p-1 border border-slate-700">
+                  <button 
+                    onClick={() => setView('pool')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${view === 'pool' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    Pool Standings
+                  </button>
+                  <button 
+                    onClick={() => setView('leaderboard')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${view === 'leaderboard' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    PGA Leaderboard
+                  </button>
+                </div>
+
+                <button 
+                  onClick={() => {
+                    fetchLeaderboard();
+                    console.log("Manual refresh requested");
+                  }} 
+                  disabled={loading}
+                  className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                >
+                  <RefreshIcon className={loading ? 'animate-spin' : ''} />
+                  Refresh
+                </button>
+                
+                <button 
+                  onClick={() => setShowSettings(!showSettings)}
+                  className="p-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors text-slate-300"
+                  title="Settings"
+                >
+                  <SettingsIcon />
+                </button>
               </div>
+            </header>
+
+            {apiError && (
+              <div className="bg-amber-900/50 border border-amber-500 text-amber-200 p-4 rounded-xl flex items-center gap-3">
+                <AlertIcon />
+                <div>
+                  <h3 className="font-bold">Notice</h3>
+                  <p className="text-sm opacity-80">{apiError}</p>
+                </div>
+              </div>
+            )}
+
+            {showSettings && (
+              <div className="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700 transition-all">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold flex items-center gap-2"><SettingsIcon /> Pool Settings</h3>
+                  <button 
+                    onClick={async () => {
+                      if(window.confirm("Are you sure you want to clear the timeline chart history from the cloud?")) {
+                        setHistory([]);
+                        try {
+                          await fetch(BIN_URL_PUT, {
+                            method: 'PUT',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'X-Master-Key': MASTER_KEY
+                            },
+                            body: JSON.stringify({ history: [] })
+                          });
+                        } catch (e) {
+                          console.error("Error deleting history", e);
+                        }
+                      }
+                    }}
+                    className="text-xs bg-red-900/50 hover:bg-red-800 text-red-300 px-3 py-1.5 rounded border border-red-700 transition-colors"
+                  >
+                    Clear Chart History
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-400 mb-2">Base Cut Line Position</label>
+                    <input 
+                      type="number" 
+                      value={cutBase} 
+                      onChange={(e) => setCutBase(parseInt(e.target.value) || 0)}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-400 mb-2">Missed Cut Penalty</label>
+                    <input 
+                      type="number" 
+                      value={cutPenalty} 
+                      onChange={(e) => setCutPenalty(parseInt(e.target.value) || 0)}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between px-2 text-sm text-slate-400">
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-3 w-3"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span><span className="relative inline-flex rounded-full h-3 w-3 bg-indigo-500"></span></span> Real-time PGA scoring with live mathematical finish projections (Auto-refreshes every 15m)
+              </div>
+              {lastUpdate && <span>Last updated: {lastUpdate.toLocaleTimeString()}</span>}
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-              {poolResults.map((participant, index) => {
-                const isLeader = index === 0;
-                return (
-                  <div 
-                    key={participant.name} 
-                    className={`relative rounded-2xl overflow-hidden shadow-xl border ${isLeader ? 'border-amber-400/50 bg-slate-800' : 'border-slate-700 bg-slate-800/80'} transition-transform hover:-translate-y-1`}
-                  >
-                    <div className={`p-5 flex justify-between items-center border-b ${isLeader ? 'border-amber-400/20 bg-amber-400/5' : 'border-slate-700 bg-slate-900/50'}`}>
-                      <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${isLeader ? 'bg-amber-400 text-slate-900' : 'bg-slate-700 text-slate-300'}`}>
-                          {index + 1}
-                        </div>
-                        <h2 className={`text-xl font-bold ${isLeader ? 'text-amber-400' : 'text-white'}`}>{participant.name}</h2>
-                      </div>
-                      <div className="text-right flex items-center gap-4">
-                        <div>
-                          <div className="text-xs text-slate-400 uppercase tracking-wider">Actual</div>
-                          <div className={`text-2xl font-black ${isLeader ? 'text-amber-400' : 'text-emerald-400'}`}>{participant.totalScore}</div>
-                        </div>
-                        <div className="pl-4 border-l-2 border-slate-700/50">
-                          <div className="text-xs text-slate-500 uppercase tracking-wider">Proj</div>
-                          <div className={`text-xl font-bold ${isLeader ? 'text-amber-500/80' : 'text-slate-400'}`}>{participant.projTotalScore}</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="p-0 overflow-x-auto">
-                      <table className="w-full text-sm text-left whitespace-nowrap">
-                        <thead className="bg-slate-900/50 text-slate-400 text-xs uppercase font-semibold">
-                          <tr>
-                            <th className="px-2 py-3 sm:px-3 text-center w-10">Pos</th>
-                            <th className="px-2 py-3 sm:px-3">Golfer</th>
-                            <th className="px-2 py-3 text-center sm:px-3">Score</th>
-                            <th className="px-2 py-3 text-center sm:px-3">Thru</th>
-                            <th className="px-2 py-3 text-center sm:px-3">Mult</th>
-                            <th className="px-2 py-3 text-right sm:px-3">Pts</th>
-                            <th className="px-2 py-3 text-center bg-slate-900/80 border-l-2 border-slate-700/50 sm:px-3">Proj Pos</th>
-                            <th className="px-2 py-3 text-right bg-slate-900/80 sm:px-3">Proj Pts</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-700/50">
-                          {participant.picksScored.map((pick, i) => (
-                            <tr key={i} className="hover:bg-slate-700/30 transition-colors">
-                              <td className="px-2 py-3 text-center font-bold text-slate-300 sm:px-3">
-                                {pick.posStr}
-                              </td>
-                              <td className="px-2 py-3 font-medium text-slate-200 sm:px-3">
-                                <div className="flex items-center gap-1.5">
-                                  {pick.name}
-                                  {pick.isCutOrWD && <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-900/50 text-red-400 border border-red-800">MC</span>}
-                                </div>
-                              </td>
-                              <td className="px-2 py-3 text-center font-black text-emerald-400 text-base sm:px-3">
-                                {pick.realScore}
-                              </td>
-                              <td className="px-2 py-3 text-center text-slate-400 sm:px-3">
-                                {pick.thru}
-                              </td>
-                              <td className="px-2 py-3 text-center text-xs sm:px-3">
-                                {pick.multiplier > 1 ? (
-                                  <span className="text-amber-500/70 font-semibold">{pick.multiplier}x</span>
-                                ) : (
-                                  <span className="text-slate-600/50">1x</span>
-                                )}
-                              </td>
-                              <td className="px-2 py-3 text-right font-black text-white text-base sm:px-3">
-                                {pick.totalPoints}
-                              </td>
-                              <td className="px-2 py-3 text-center font-bold text-indigo-300 bg-slate-800/30 border-l-2 border-slate-700/50 sm:px-3">
-                                {pick.projPosStr}
-                              </td>
-                              <td className="px-2 py-3 text-right font-black text-indigo-200 text-base bg-slate-800/30 sm:px-3">
-                                {pick.projTotalPoints}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+            {view === 'pool' ? (
+              <div className="space-y-8">
+                
+                <div className="bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-700">
+                  <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
+                    <div>
+                      <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                        Tournament Timeline & Projections
+                      </h3>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          </div>
-        ) : (
-          <div className="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 overflow-hidden">
-            <div className="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-900/50">
-              <h3 className="text-lg font-bold text-white">Full Tournament Leaderboard</h3>
-              <button
-                onClick={() => setFilterPicked(!filterPicked)}
-                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${filterPicked ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-                {filterPicked ? 'Pool Picks Only' : 'All Golfers'}
-              </button>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left whitespace-nowrap select-none">
-                <thead className="bg-slate-900 text-slate-400 text-xs uppercase font-semibold">
-                  <tr>
-                    <th className="px-5 py-4 cursor-pointer group hover:text-white transition-colors" onClick={() => requestSort('pos')}>
-                      Pos {renderSortArrow('pos')}
-                    </th>
-                    <th className="px-5 py-4 cursor-pointer group hover:text-white transition-colors" onClick={() => requestSort('name')}>
-                      Golfer {renderSortArrow('name')}
-                    </th>
-                    <th className="px-5 py-4 text-center cursor-pointer group hover:text-white transition-colors" onClick={() => requestSort('score')}>
-                      Score {renderSortArrow('score')}
-                    </th>
-                    <th className="px-5 py-4 text-center cursor-pointer group hover:text-white transition-colors" onClick={() => requestSort('thru')}>
-                      Thru {renderSortArrow('thru')}
-                    </th>
-                    <th className="px-5 py-4 cursor-pointer group hover:text-white transition-colors" onClick={() => requestSort('picked')}>
-                      Picked By {renderSortArrow('picked')}
-                    </th>
-                    <th className="px-5 py-4 text-right cursor-pointer group hover:text-white transition-colors" onClick={() => requestSort('pts')}>
-                      Pool Pts {renderSortArrow('pts')}
-                    </th>
-                    <th className="px-5 py-4 text-center cursor-pointer group hover:text-white transition-colors border-l-2 border-slate-700 bg-slate-900/80" onClick={() => requestSort('projPos')}>
-                      Proj Pos {renderSortArrow('projPos')}
-                    </th>
-                    <th className="px-5 py-4 text-right cursor-pointer group hover:text-white transition-colors bg-slate-900/80" onClick={() => requestSort('projPts')}>
-                      Proj Pts {renderSortArrow('projPts')}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-700">
-                  {displayLeaderboard.map((golfer, idx) => {
+                  
+                  <div className="h-[400px] w-full" style={{ fontFamily: 'inherit' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+                        <XAxis 
+                          dataKey="timeLabel" 
+                          stroke="#94a3b8" 
+                          fontSize={12} 
+                          tickMargin={10} 
+                        />
+                        <YAxis 
+                          reversed={true} 
+                          stroke="#94a3b8" 
+                          fontSize={12}
+                          domain={['auto', 'auto']}
+                        />
+                        <Tooltip 
+                          content={<CustomTooltip />}
+                          cursor={{ stroke: '#475569', strokeWidth: 1, strokeDasharray: '4 4' }}
+                        />
+                        
+                        {POOL_ENTRIES.map((entry, index) => {
+                          const color = CHART_COLORS[index % CHART_COLORS.length];
+                          return (
+                            <React.Fragment key={entry.name}>
+                              <Line 
+                                type="monotone" 
+                                dataKey={entry.name} 
+                                name={entry.name}
+                                stroke={color} 
+                                strokeWidth={3} 
+                                dot={<CustomDot />}
+                                activeDot={<CustomDot />} 
+                                connectNulls={true}
+                              />
+                              <Line 
+                                type="monotone" 
+                                dataKey={`${entry.name}_Proj`} 
+                                name={`${entry.name} Proj`}
+                                stroke={color} 
+                                strokeWidth={2} 
+                                strokeDasharray="5 5" 
+                                dot={<CustomDot />}
+                                activeDot={<CustomDot />}
+                                connectNulls={true}
+                                opacity={0.6}
+                              />
+                            </React.Fragment>
+                          );
+                        })}
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                  {poolResults.map((participant, index) => {
+                    const isLeader = index === 0;
                     return (
-                      <tr key={idx} className={`transition-colors ${golfer.isPicked ? 'bg-indigo-900/40 hover:bg-indigo-800/50' : 'hover:bg-slate-700/50'}`}>
-                        <td className="px-5 py-3 font-bold text-slate-300">{golfer.posStr}</td>
-                        <td className={`px-5 py-3 font-medium ${golfer.isPicked ? 'text-indigo-200' : 'text-white'}`}>{golfer.name}</td>
-                        <td className="px-5 py-3 text-center font-black text-emerald-400 text-base">{golfer.score}</td>
-                        <td className="px-5 py-3 text-center text-slate-400">{golfer.thru}</td>
-                        <td className="px-5 py-3">
-                          <div className="flex gap-1 flex-wrap">
-                            {golfer.isPicked ? golfer.pickers.map(p => (
-                              <div key={p} title={p} className="w-6 h-6 rounded-full bg-indigo-600 text-[10px] font-bold flex items-center justify-center border border-indigo-400 text-white shadow-sm">
-                                {p.substring(0, 2).toUpperCase()}
-                              </div>
-                            )) : <span className="text-slate-600 text-xs">—</span>}
+                      <div 
+                        key={participant.name} 
+                        className={`relative rounded-2xl overflow-hidden shadow-xl border ${isLeader ? 'border-amber-400/50 bg-slate-800' : 'border-slate-700 bg-slate-800/80'} transition-transform hover:-translate-y-1`}
+                      >
+                        <div className={`p-5 flex justify-between items-center border-b ${isLeader ? 'border-amber-400/20 bg-amber-400/5' : 'border-slate-700 bg-slate-900/50'}`}>
+                          <div className="flex items-center gap-3">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${isLeader ? 'bg-amber-400 text-slate-900' : 'bg-slate-700 text-slate-300'}`}>
+                              {index + 1}
+                            </div>
+                            <h2 className={`text-xl font-bold ${isLeader ? 'text-amber-400' : 'text-white'}`}>{participant.name}</h2>
                           </div>
-                        </td>
-                        <td className="px-5 py-3 text-right">
-                          {golfer.isPicked ? (
-                            <span className="font-black text-xl text-white">{golfer.poolPts}</span>
-                          ) : (
-                            <span className="text-slate-600">—</span>
-                          )}
-                        </td>
-                        <td className="px-5 py-3 text-center font-bold text-indigo-300 border-l-2 border-slate-700/50 bg-slate-800/40">
-                          {golfer.projPosStr}
-                        </td>
-                        <td className="px-5 py-3 text-right font-bold text-indigo-200/80 bg-slate-800/40">
-                          {golfer.isPicked ? golfer.projPoolPts : <span className="text-slate-600 font-normal">—</span>}
-                        </td>
-                      </tr>
+                          <div className="text-right flex items-center gap-4">
+                            <div>
+                              <div className="text-xs text-slate-400 uppercase tracking-wider">Actual</div>
+                              <div className={`text-2xl font-black ${isLeader ? 'text-amber-400' : 'text-emerald-400'}`}>{participant.totalScore}</div>
+                            </div>
+                            <div className="pl-4 border-l-2 border-slate-700/50">
+                              <div className="text-xs text-slate-500 uppercase tracking-wider">Proj</div>
+                              <div className={`text-xl font-bold ${isLeader ? 'text-amber-500/80' : 'text-slate-400'}`}>{participant.projTotalScore}</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-0 overflow-x-auto">
+                          <table className="w-full text-sm text-left whitespace-nowrap">
+                            <thead className="bg-slate-900/50 text-slate-400 text-xs uppercase font-semibold">
+                              <tr>
+                                <th className="px-2 py-3 sm:px-3 text-center w-10">Pos</th>
+                                <th className="px-2 py-3 sm:px-3">Golfer</th>
+                                <th className="px-2 py-3 text-center sm:px-3">Score</th>
+                                <th className="px-2 py-3 text-center sm:px-3">Thru</th>
+                                <th className="px-2 py-3 text-center sm:px-3">Mult</th>
+                                <th className="px-2 py-3 text-right sm:px-3">Pts</th>
+                                <th className="px-2 py-3 text-center bg-slate-900/80 border-l-2 border-slate-700/50 sm:px-3">Proj Pos</th>
+                                <th className="px-2 py-3 text-right bg-slate-900/80 sm:px-3">Proj Pts</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-700/50">
+                              {participant.picksScored.map((pick, i) => (
+                                <tr key={i} className="hover:bg-slate-700/30 transition-colors">
+                                  <td className="px-2 py-3 text-center font-bold text-slate-300 sm:px-3">
+                                    {pick.posStr}
+                                  </td>
+                                  <td className="px-2 py-3 font-medium text-slate-200 sm:px-3">
+                                    <div className="flex items-center gap-1.5">
+                                      {pick.name}
+                                      {pick.isCutOrWD && <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-900/50 text-red-400 border border-red-800">MC</span>}
+                                    </div>
+                                  </td>
+                                  <td className="px-2 py-3 text-center font-black text-emerald-400 text-base sm:px-3">
+                                    {pick.realScore}
+                                  </td>
+                                  <td className="px-2 py-3 text-center text-slate-400 sm:px-3">
+                                    {pick.thru}
+                                  </td>
+                                  <td className="px-2 py-3 text-center text-xs sm:px-3">
+                                    {pick.multiplier > 1 ? (
+                                      <span className="text-amber-500/70 font-semibold">{pick.multiplier}x</span>
+                                    ) : (
+                                      <span className="text-slate-600/50">1x</span>
+                                    )}
+                                  </td>
+                                  <td className="px-2 py-3 text-right font-black text-white text-base sm:px-3">
+                                    {pick.totalPoints}
+                                  </td>
+                                  <td className="px-2 py-3 text-center font-bold text-indigo-300 bg-slate-800/30 border-l-2 border-slate-700/50 sm:px-3">
+                                    {pick.projPosStr}
+                                  </td>
+                                  <td className="px-2 py-3 text-right font-black text-indigo-200 text-base bg-slate-800/30 sm:px-3">
+                                    {pick.projTotalPoints}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
                     );
                   })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
+                </div>
+              </div>
+            ) : (
+              <div className="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 overflow-hidden">
+                <div className="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-900/50">
+                  <h3 className="text-lg font-bold text-white">Full Tournament Leaderboard</h3>
+                  <button
+                    onClick={() => setFilterPicked(!filterPicked)}
+                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${filterPicked ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                    {filterPicked ? 'Pool Picks Only' : 'All Golfers'}
+                  </button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left whitespace-nowrap select-none">
+                    <thead className="bg-slate-900 text-slate-400 text-xs uppercase font-semibold">
+                      <tr>
+                        <th className="px-5 py-4 cursor-pointer group hover:text-white transition-colors" onClick={() => requestSort('pos')}>
+                          Pos {renderSortArrow('pos')}
+                        </th>
+                        <th className="px-5 py-4 cursor-pointer group hover:text-white transition-colors" onClick={() => requestSort('name')}>
+                          Golfer {renderSortArrow('name')}
+                        </th>
+                        <th className="px-5 py-4 text-center cursor-pointer group hover:text-white transition-colors" onClick={() => requestSort('score')}>
+                          Score {renderSortArrow('score')}
+                        </th>
+                        <th className="px-5 py-4 text-center cursor-pointer group hover:text-white transition-colors" onClick={() => requestSort('thru')}>
+                          Thru {renderSortArrow('thru')}
+                        </th>
+                        <th className="px-5 py-4 cursor-pointer group hover:text-white transition-colors" onClick={() => requestSort('picked')}>
+                          Picked By {renderSortArrow('picked')}
+                        </th>
+                        <th className="px-5 py-4 text-right cursor-pointer group hover:text-white transition-colors" onClick={() => requestSort('pts')}>
+                          Pool Pts {renderSortArrow('pts')}
+                        </th>
+                        <th className="px-5 py-4 text-center cursor-pointer group hover:text-white transition-colors border-l-2 border-slate-700 bg-slate-900/80" onClick={() => requestSort('projPos')}>
+                          Proj Pos {renderSortArrow('projPos')}
+                        </th>
+                        <th className="px-5 py-4 text-right cursor-pointer group hover:text-white transition-colors bg-slate-900/80" onClick={() => requestSort('projPts')}>
+                          Proj Pts {renderSortArrow('projPts')}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-700">
+                      {displayLeaderboard.map((golfer, idx) => {
+                        return (
+                          <tr key={idx} className={`transition-colors ${golfer.isPicked ? 'bg-indigo-900/40 hover:bg-indigo-800/50' : 'hover:bg-slate-700/50'}`}>
+                            <td className="px-5 py-3 font-bold text-slate-300">{golfer.posStr}</td>
+                            <td className={`px-5 py-3 font-medium ${golfer.isPicked ? 'text-indigo-200' : 'text-white'}`}>{golfer.name}</td>
+                            <td className="px-5 py-3 text-center font-black text-emerald-400 text-base">{golfer.score}</td>
+                            <td className="px-5 py-3 text-center text-slate-400">{golfer.thru}</td>
+                            <td className="px-5 py-3">
+                              <div className="flex gap-1 flex-wrap">
+                                {golfer.isPicked ? golfer.pickers.map(p => (
+                                  <div key={p} title={p} className="w-6 h-6 rounded-full bg-indigo-600 text-[10px] font-bold flex items-center justify-center border border-indigo-400 text-white shadow-sm">
+                                    {p.substring(0, 2).toUpperCase()}
+                                  </div>
+                                )) : <span className="text-slate-600 text-xs">—</span>}
+                              </div>
+                            </td>
+                            <td className="px-5 py-3 text-right">
+                              {golfer.isPicked ? (
+                                <span className="font-black text-xl text-white">{golfer.poolPts}</span>
+                              ) : (
+                                <span className="text-slate-600">—</span>
+                              )}
+                            </td>
+                            <td className="px-5 py-3 text-center font-bold text-indigo-300 border-l-2 border-slate-700/50 bg-slate-800/40">
+                              {golfer.projPosStr}
+                            </td>
+                            <td className="px-5 py-3 text-right font-bold text-indigo-200/80 bg-slate-800/40">
+                              {golfer.isPicked ? golfer.projPoolPts : <span className="text-slate-600 font-normal">—</span>}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
 
-      </div>
-    </div>
-  );
-}
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
