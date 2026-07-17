@@ -48,14 +48,14 @@
       { name: "Aunties", picks: ["Matt Fitzpatrick", "Tommy Fleetwood", "Justin Rose", "Chris Gotterup", "Russell Henley"] },
       { name: "Auntie Dave", picks: ["Rory McIlroy", "Tommy Fleetwood", "Matt Fitzpatrick", "Xander Schauffele", "Chris Gotterup"] },
       { name: "Jeans", picks: ["Brian Harman", "Tommy Fleetwood", "Matt Fitzpatrick", "Justin Rose", "Rory McIlroy"] },
-      { name: "Libenold", picks: ["Viktor Hovland", "Min Woo Lee", "Ludvig Aberg", "Justin Rose", "Matt Fitzpatrick"] }
+      { name: "Libenold", picks: ["Viktor Hovland", "Min Woo Lee", "Ludvig Åberg", "Justin Rose", "Matt Fitzpatrick"] }
     ];
 
     const PLAYER_BASELINES = {
       "Scottie Scheffler": -2.5,
       "Xander Schauffele": -2.0,
       "Rory McIlroy": -1.8,
-      "Ludvig Aberg": -1.5,
+      "Ludvig Åberg": -1.5,
       "Collin Morikawa": -1.5,
       "Bryson DeChambeau": -1.5,
       "Tommy Fleetwood": -1.2,
@@ -85,6 +85,11 @@
       return counts;
     };
     const PICK_COUNTS = calculatePickFrequencies();
+
+    const normalizeName = (name) => {
+      if (!name) return "";
+      return name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    };
 
     const CustomDot = (props) => {
       const { cx, cy, stroke, value, dataKey, payload } = props;
@@ -155,6 +160,7 @@
       const [cutBase, setCutBase] = useState(70);
       const [cutPenalty, setCutPenalty] = useState(50);
       const [showSettings, setShowSettings] = useState(false);
+      const [confirmClear, setConfirmClear] = useState(false);
 
       const [history, setHistory] = useState([]);
       const [historyLoaded, setHistoryLoaded] = useState(false);
@@ -354,7 +360,8 @@
 
           let displayScore = scoreInt === 0 ? "E" : (scoreInt > 0 ? `+${scoreInt}` : scoreInt.toString());
 
-          let baselinePerRound = PLAYER_BASELINES[p.name] !== undefined ? PLAYER_BASELINES[p.name] : +0.5;
+          let baselineNameKey = Object.keys(PLAYER_BASELINES).find(k => normalizeName(k) === normalizeName(p.name));
+          let baselinePerRound = baselineNameKey ? PLAYER_BASELINES[baselineNameKey] : +0.5;
           let holesRemainingR2 = Math.max(0, 36 - p.thruInt);
           let holesRemainingWeekend = Math.max(0, 72 - p.thruInt) - holesRemainingR2;
           
@@ -369,7 +376,7 @@
         let cutLineStr = "";
         
         if (activeForCut.length > cutBase - 1) {
-          projectedCutScore = activeForCut[cutBase - 1].proj36; // Find the exact score of the 70th player
+          projectedCutScore = activeForCut[cutBase - 1].proj36;
           let roundedCut = Math.round(projectedCutScore);
           cutLineStr = roundedCut === 0 ? "E" : (roundedCut > 0 ? `+${roundedCut}` : roundedCut.toString());
         }
@@ -380,9 +387,8 @@
           }
           
           let makesCut = p.proj36 <= projectedCutScore;
-          if (p.thruInt > 36) makesCut = true; // Safety override if they are actually playing the weekend
+          if (p.thruInt > 36) makesCut = true;
 
-          // If they make the cut, they get to play the weekend holes. Otherwise, their score stops at 36.
           let projScore = makesCut ? (p.proj36 + ((p.baselinePerRound / 18) * p.holesRemainingWeekend)) : p.proj36;
           return { ...p, projScore, isProjectedCut: !makesCut };
         });
@@ -432,21 +438,23 @@
 
       const getPickersForGolfer = (leaderboardName) => {
         if (!leaderboardName) return [];
+        const normL = normalizeName(leaderboardName);
         return POOL_ENTRIES.filter(entry => {
           return entry.picks.some(pick => {
             if (!pick) return false;
-            if (pick.toLowerCase() === leaderboardName.toLowerCase()) return true;
+            const normP = normalizeName(pick);
+            if (normP === normL) return true;
             
-            const pParts = pick.toLowerCase().trim().split(' ');
+            const pParts = normP.split(' ');
             const pLastName = pParts[pParts.length - 1];
             const pFirstInitial = pParts[0].charAt(0);
             
-            const lParts = leaderboardName.toLowerCase().trim().split(' ');
+            const lParts = normL.split(' ');
             const lLastName = lParts[lParts.length - 1];
             const lFirstInitial = lParts[0].charAt(0);
             
             if (pLastName === lLastName && pFirstInitial === lFirstInitial) return true;
-            if (leaderboardName.toLowerCase().includes(pick.toLowerCase())) return true;
+            if (normL.includes(normP)) return true;
             
             return false;
           });
@@ -456,16 +464,17 @@
       const getPlayerScore = (playerName) => {
         if (!playerName) return { name: "Unknown", posStr: "-", rawPos: 1, realScore: "-", thru: "-", multiplier: 1, totalPoints: 0, isCutOrWD: false, found: false };
         
-        let player = leaderboard.find(p => p?.name?.toLowerCase() === playerName.toLowerCase());
+        const normP = normalizeName(playerName);
+        let player = leaderboard.find(p => normalizeName(p?.name) === normP);
 
         if (!player) {
-          const nameParts = playerName.toLowerCase().trim().split(' ');
+          const nameParts = normP.split(' ');
           const lastName = nameParts[nameParts.length - 1];
           const firstInitial = nameParts[0].charAt(0);
 
           player = leaderboard.find(p => {
             if (!p?.name) return false;
-            const pParts = p.name.toLowerCase().trim().split(' ');
+            const pParts = normalizeName(p.name).split(' ');
             const pLastName = pParts[pParts.length - 1];
             const pFirstInitial = pParts[0].charAt(0);
             return pLastName === lastName && pFirstInitial === firstInitial;
@@ -495,7 +504,8 @@
           }
         }
 
-        const multiplier = PICK_COUNTS[playerName] || 1;
+        const multNameKey = Object.keys(PICK_COUNTS).find(k => normalizeName(k) === normP);
+        const multiplier = multNameKey ? PICK_COUNTS[multNameKey] : 1;
         const totalPoints = pos * multiplier;
         const projTotalPoints = projPosInt * multiplier;
 
@@ -517,8 +527,6 @@
       const poolResults = useMemo(() => {
         return POOL_ENTRIES.map(entry => {
           const picksScored = entry.picks.map(getPlayerScore);
-          
-          // Sort individual picks from best pos to worst pos
           picksScored.sort((a, b) => a.rawPos - b.rawPos);
 
           const totalScore = picksScored.reduce((sum, p) => sum + p.totalPoints, 0);
@@ -528,7 +536,6 @@
       }, [leaderboard, cutBase, cutPenalty]);
 
       useEffect(() => {
-        // SECURITY: Do not allow saving until we have fresh ESPN data AND existing history is loaded
         if (loading || poolResults.length === 0 || !historyLoaded) return;
 
         const now = new Date();
@@ -538,7 +545,6 @@
           lastPointTime = history[history.length - 1].timestamp;
         }
 
-        // If it has been LESS than 15 minutes since the last recorded snapshot, safely exit
         if (now.getTime() - lastPointTime < 15 * 60 * 1000) {
           return; 
         }
@@ -605,7 +611,8 @@
           if (golfer.isMC || golfer.isWD) pos = cutBase + cutPenalty;
           else if (golfer.posInt > 0) pos = golfer.posInt;
           
-          const mult = PICK_COUNTS[golfer.name] || 1;
+          const multNameKey = Object.keys(PICK_COUNTS).find(k => normalizeName(k) === normalizeName(golfer.name));
+          const mult = multNameKey ? PICK_COUNTS[multNameKey] : 1;
           const poolPts = pos * mult;
           const projPoolPts = golfer.projPosInt * mult;
           const isPicked = pickers.length > 0;
@@ -664,6 +671,23 @@
         if (filterPicked) return enhancedLeaderboard.filter(g => g.isPicked);
         return enhancedLeaderboard;
       }, [enhancedLeaderboard, filterPicked]);
+
+      const handleClearHistory = async () => {
+        setHistory([]);
+        setConfirmClear(false);
+        try {
+          await fetch(BIN_URL_PUT, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Master-Key': MASTER_KEY
+            },
+            body: JSON.stringify({ history: [] })
+          });
+        } catch (e) {
+          console.error("Error deleting history", e);
+        }
+      };
 
       return (
         <div className="min-h-screen p-4 md:p-8 bg-slate-900 text-slate-100 font-sans">
@@ -732,28 +756,31 @@
               <div className="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700 transition-all">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-bold flex items-center gap-2"><SettingsIcon /> Pool Settings</h3>
-                  <button 
-                    onClick={async () => {
-                      if(window.confirm("Are you sure you want to clear the timeline chart history from the cloud?")) {
-                        setHistory([]);
-                        try {
-                          await fetch(BIN_URL_PUT, {
-                            method: 'PUT',
-                            headers: {
-                              'Content-Type': 'application/json',
-                              'X-Master-Key': MASTER_KEY
-                            },
-                            body: JSON.stringify({ history: [] })
-                          });
-                        } catch (e) {
-                          console.error("Error deleting history", e);
-                        }
-                      }
-                    }}
-                    className="text-xs bg-red-900/50 hover:bg-red-800 text-red-300 px-3 py-1.5 rounded border border-red-700 transition-colors"
-                  >
-                    Clear Chart History
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {confirmClear ? (
+                      <>
+                        <button 
+                          onClick={() => setConfirmClear(false)}
+                          className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <button 
+                          onClick={handleClearHistory}
+                          className="text-xs bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded font-bold transition-colors animate-pulse"
+                        >
+                          Click to Confirm Clear
+                        </button>
+                      </>
+                    ) : (
+                      <button 
+                        onClick={() => setConfirmClear(true)}
+                        className="text-xs bg-red-900/50 hover:bg-red-800 text-red-300 px-3 py-1.5 rounded border border-red-700 transition-colors"
+                      >
+                        Clear Chart History
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
