@@ -5,13 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>British Open Pool 2026</title>
   
-  <!-- Tailwind & React Libraries -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone@7.23.6/babel.min.js"></script>
   
-  <!-- Recharts and Dependencies (MUST use 2.1.9 to prevent crash) -->
   <script src="https://unpkg.com/prop-types@15.6/prop-types.min.js"></script>
   <script src="https://unpkg.com/react-is@18.2.0/umd/react-is.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/recharts@2.1.9/umd/Recharts.js" crossorigin></script>
@@ -252,6 +250,7 @@
       }, []);
 
       const leaderboard = useMemo(() => {
+        // PASS 1: Parse basic data and collect score candidates
         let parsedData = rawApiData.map(c => {
           const name = c?.athlete?.displayName || "Unknown Golfer";
           let posStr = c?.status?.position?.displayName || "-";
@@ -279,52 +278,121 @@
           let round = c?.linescores ? c.linescores.length : 1;
           let thruInt = ((round - 1) * 18) + holesToday;
           
-          let today = "-";
-          if (c?.linescores && c.linescores.length > 0) {
-            for (let i = c.linescores.length - 1; i >= 0; i--) {
-              if (c.linescores[i]?.displayValue) {
-                today = c.linescores[i].displayValue;
-                break;
-              }
-            }
-          }
-
-          let displayScore = "E";
-
-          // Priority 1: Explicit numeric total property (safest if ESPN provides it)
+          // Gather SCORE CANDIDATES to combat ESPN's live round data-overwrite glitch
+          let candidates = new Set();
+          
           if (c?.totalToPar !== undefined && c?.totalToPar !== null) {
-            displayScore = c.totalToPar === 0 ? "E" : (c.totalToPar > 0 ? `+${c.totalToPar}` : c.totalToPar.toString());
+            candidates.add(c.totalToPar);
           }
-          // Priority 2: The main score object (contains the Total Tournament Score)
-          else if (c?.score != null) {
+          
+          if (c?.score != null) {
             let tempScore = typeof c.score === 'object' ? c.score?.displayValue : c.score;
-            if (tempScore === 0 || tempScore === "0") {
-              displayScore = "E";
-            } else if (typeof tempScore === 'number' && tempScore > 0) {
-              displayScore = `+${tempScore}`;
-            } else {
-              displayScore = tempScore ? tempScore.toString().trim() : "E";
-            }
+            let parsed = tempScore === "E" ? 0 : parseInt(tempScore.toString().replace('+', ''));
+            if (!isNaN(parsed)) candidates.add(parsed);
           }
 
-          // Fallback sanity check
-          if (displayScore === "" || displayScore === "-") {
-              displayScore = "E";
+          if (c?.statistics && Array.isArray(c.statistics)) {
+            c.statistics.forEach(stat => {
+              let val = stat?.displayValue;
+              if (val === "E" || (typeof val === 'string' && (val.startsWith('+') || val.startsWith('-')))) {
+                let parsed = val === "E" ? 0 : parseInt(val.replace('+', ''));
+                if (!isNaN(parsed) && parsed >= -40 && parsed <= 40) {
+                  candidates.add(parsed);
+                }
+              }
+            });
           }
 
-          let scoreInt = displayScore === "E" ? 0 : parseInt(displayScore.replace('+', '')) || 0;
+          if (candidates.size === 0) candidates.add(0);
+          let candArray = Array.from(candidates);
 
-          let baselinePerRound = PLAYER_BASELINES[name] !== undefined ? PLAYER_BASELINES[name] : +0.5;
-          let holesRemaining = 72 - thruInt;
-          if (holesRemaining < 0) holesRemaining = 0;
-          let projScore = scoreInt + ((baselinePerRound / 18) * holesRemaining);
-
-          return { name, posStr, posInt, score: displayScore, scoreInt, thru, thruInt, isMC, isWD, projScore };
+          return { name, posStr, posInt, thru, thruInt, isMC, isWD, candArray };
         });
 
-        let projectedData = [...parsedData].sort((a, b) => {
+        // PASS 2: Determine consensus score for each position
+        let posGroups = {};
+        parsedData.forEach(p => {
+          if (p.posInt === 0 || p.isMC || p.isWD) return;
+          if (!posGroups[p.posInt]) posGroups[p.posInt] = [];
+          posGroups[p.posInt].push(p);
+        });
+
+        let consensusScoreByPos = {};
+        Object.keys(posGroups).forEach(pos => {
+          let players = posGroups[pos];
+          let freq = {};
+          players.forEach(p => {
+            p.candArray.forEach(cand => {
+              freq[cand] = (freq[cand] || 0) + 1;
+            });
+          });
+          
+          let bestCand = 0;
+          let maxFreq = -1;
+          Object.keys(freq).forEach(candStr => {
+            let cand = parseInt(candStr);
+            if (freq[candStr] > maxFreq) {
+              maxFreq = freq[candStr];
+              bestCand = cand;
+            } else if (freq[candStr] === maxFreq) {
+              if (Math.abs(cand) > Math.abs(bestCand)) {
+                bestCand = cand;
+              }
+            }
+          });
+          consensusScoreByPos[pos] = bestCand;
+        });
+
+        // PASS 3: Assign scores & calculate 36-hole projection for the Cut
+        let dataWith36 = parsedData.map(p => {
+          let scoreInt = 0;
+          if (p.isMC || p.isWD || p.posInt === 0) {
+            scoreInt = p.candArray[0];
+          } else {
+            scoreInt = consensusScoreByPos[p.posInt] !== undefined ? consensusScoreByPos[p.posInt] : p.candArray[0];
+          }
+
+          let displayScore = scoreInt === 0 ? "E" : (scoreInt > 0 ? `+${scoreInt}` : scoreInt.toString());
+
+          let baselinePerRound = PLAYER_BASELINES[p.name] !== undefined ? PLAYER_BASELINES[p.name] : +0.5;
+          let holesRemainingR2 = Math.max(0, 36 - p.thruInt);
+          let holesRemainingWeekend = Math.max(0, 72 - p.thruInt) - holesRemainingR2;
+          
+          let proj36 = scoreInt + ((baselinePerRound / 18) * holesRemainingR2);
+
+          return { ...p, scoreInt, score: displayScore, baselinePerRound, holesRemainingR2, holesRemainingWeekend, proj36 };
+        });
+
+        // PASS 4: Determine dynamic cut line & final 72-hole projections
+        let activeForCut = dataWith36.filter(p => !p.isWD && !p.isMC).sort((a, b) => a.proj36 - b.proj36);
+        let projectedCutScore = 999;
+        let cutLineStr = "";
+        
+        if (activeForCut.length > cutBase - 1) {
+          projectedCutScore = activeForCut[cutBase - 1].proj36; // Find the exact score of the 70th player
+          let roundedCut = Math.round(projectedCutScore);
+          cutLineStr = roundedCut === 0 ? "E" : (roundedCut > 0 ? `+${roundedCut}` : roundedCut.toString());
+        }
+
+        let finalProjections = dataWith36.map(p => {
+          if (p.isWD || p.isMC) {
+            return { ...p, projScore: p.scoreInt, isProjectedCut: true };
+          }
+          
+          let makesCut = p.proj36 <= projectedCutScore;
+          if (p.thruInt > 36) makesCut = true; // Safety override if they are actually playing the weekend
+
+          // If they make the cut, they get to play the weekend holes. Otherwise, their score stops at 36.
+          let projScore = makesCut ? (p.proj36 + ((p.baselinePerRound / 18) * p.holesRemainingWeekend)) : p.proj36;
+          return { ...p, projScore, isProjectedCut: !makesCut };
+        });
+
+        // Sort projected finish
+        let projectedData = [...finalProjections].sort((a, b) => {
           if (a.isMC || a.isWD) return 1;
           if (b.isMC || b.isWD) return -1;
+          if (a.isProjectedCut && !b.isProjectedCut) return 1;
+          if (!a.isProjectedCut && b.isProjectedCut) return -1;
           return a.projScore - b.projScore;
         });
 
@@ -333,8 +401,13 @@
         const projPosMap = {};
 
         projectedData.forEach((p, i) => {
-          if (p.isMC || p.isWD) {
-            projPosMap[p.name] = { str: "MC", int: cutBase + cutPenalty };
+          if (p.isMC || p.isWD || p.isProjectedCut) {
+            let statusStr = "Proj MC";
+            if (p.isWD) statusStr = "WD";
+            else if (p.isMC) statusStr = "MC";
+            else if (cutLineStr) statusStr = `Proj MC (${cutLineStr})`;
+
+            projPosMap[p.name] = { str: statusStr, int: cutBase + cutPenalty };
             return;
           }
 
@@ -344,15 +417,13 @@
             previousProjScore = rounded;
           }
 
-          let isProjectedCut = currentProjPos > cutBase;
-
           projPosMap[p.name] = {
-            str: isProjectedCut ? "Proj MC" : `P${currentProjPos}`,
-            int: isProjectedCut ? (cutBase + cutPenalty) : currentProjPos
+            str: `P${currentProjPos}`,
+            int: currentProjPos
           };
         });
 
-        return parsedData.map(p => ({
+        return finalProjections.map(p => ({
           ...p,
           projPosStr: projPosMap[p.name].str,
           projPosInt: projPosMap[p.name].int
@@ -657,7 +728,6 @@
               </div>
             )}
 
-            {}
             {showSettings && (
               <div className="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700 transition-all">
                 <div className="flex items-center justify-between mb-4">
@@ -715,7 +785,6 @@
               {lastUpdate && <span>Last updated: {lastUpdate.toLocaleTimeString()}</span>}
             </div>
 
-            {}
             {view === 'pool' ? (
               <div className="space-y-8">
                 
