@@ -11,7 +11,7 @@
   <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone@7.23.6/babel.min.js"></script>
   
-  <!-- Recharts and Dependencies -->
+  <!-- Recharts and Dependencies (MUST use 2.1.9 to prevent crash) -->
   <script src="https://unpkg.com/prop-types@15.6/prop-types.min.js"></script>
   <script src="https://unpkg.com/react-is@18.2.0/umd/react-is.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/recharts@2.1.9/umd/Recharts.js" crossorigin></script>
@@ -290,15 +290,26 @@
           }
 
           let displayScore = "E";
-          if (c?.score != null) {
+
+          // Priority 1: Explicit numeric total property (safest if ESPN provides it)
+          if (c?.totalToPar !== undefined && c?.totalToPar !== null) {
+            displayScore = c.totalToPar === 0 ? "E" : (c.totalToPar > 0 ? `+${c.totalToPar}` : c.totalToPar.toString());
+          }
+          // Priority 2: The main score object (contains the Total Tournament Score)
+          else if (c?.score != null) {
             let tempScore = typeof c.score === 'object' ? c.score?.displayValue : c.score;
             if (tempScore === 0 || tempScore === "0") {
               displayScore = "E";
             } else if (typeof tempScore === 'number' && tempScore > 0) {
               displayScore = `+${tempScore}`;
             } else {
-              displayScore = tempScore ? tempScore.toString() : "E";
+              displayScore = tempScore ? tempScore.toString().trim() : "E";
             }
+          }
+
+          // Fallback sanity check
+          if (displayScore === "" || displayScore === "-") {
+              displayScore = "E";
           }
 
           let scoreInt = displayScore === "E" ? 0 : parseInt(displayScore.replace('+', '')) || 0;
@@ -446,6 +457,7 @@
       }, [leaderboard, cutBase, cutPenalty]);
 
       useEffect(() => {
+        // SECURITY: Do not allow saving until we have fresh ESPN data AND existing history is loaded
         if (loading || poolResults.length === 0 || !historyLoaded) return;
 
         const now = new Date();
@@ -455,6 +467,7 @@
           lastPointTime = history[history.length - 1].timestamp;
         }
 
+        // If it has been LESS than 15 minutes since the last recorded snapshot, safely exit
         if (now.getTime() - lastPointTime < 15 * 60 * 1000) {
           return; 
         }
@@ -644,6 +657,7 @@
               </div>
             )}
 
+            {}
             {showSettings && (
               <div className="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700 transition-all">
                 <div className="flex items-center justify-between mb-4">
@@ -701,6 +715,7 @@
               {lastUpdate && <span>Last updated: {lastUpdate.toLocaleTimeString()}</span>}
             </div>
 
+            {}
             {view === 'pool' ? (
               <div className="space-y-8">
                 
